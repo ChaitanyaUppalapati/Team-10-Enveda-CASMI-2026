@@ -6,18 +6,18 @@ Owner: Member 1. The schedule spreadsheet is the source of truth for who does wh
 
 Every folder has exactly one owner. You work freely in your own folders. To change someone else's folder, open a PR and that owner reviews it (GitHub requests the review automatically through `.github/CODEOWNERS`).
 
-| Member | GitHub handle (replace) | Owns |
+| Member | GitHub handle | Owns |
 |--------|-------------------------|------|
-| Member 1 | `@member1-gh` | repo root, CI, `src/casmi/utils/`, `src/casmi/fingerprints/`, `src/casmi/retrieval/`, `models/fingerprint_mlp/`, experiment-log tooling, `docs/contribution_table.md` |
-| Member 2 | `@member2-gh` | `data/`, `src/casmi/data/`, `src/casmi/preprocess/`, `notebooks/` (loading + EDA), `models/spectrum_cnn/`, final `README.md` |
-| Member 3 | `@member3-gh` | `baselines/b1_mass_only/`, `baselines/b2_library_search/`, `models/spectrum_encoders/` |
-| Member 4 | `@member4-gh` | `src/casmi/candidates/`, `kaggle/datasets/coconut/`, `models/spectrum_formula/` |
-| Member 5 | `@member5-gh` | `src/casmi/evaluation/`, `data/splits/`, `baselines/b3_integrated/`, `models/rerankers/`, `docs/ablations/` |
-| Member 6 | `@member6-gh` | `src/casmi/submission/`, `kaggle/` (offline notebook, code dataset), `baselines/b0_placeholder/`, `models/compact/`, `experiments/leaderboard/`, `docs/runtime_report.md` |
-| Member 7 | `@member7-gh` | `models/spectra_pooling/`, `docs/competition_summary.md`, `docs/error_analysis/`, `report/` |
-| Member 8 | `@member8-gh` | `models/ensembles/`, `docs/public_approaches.md`, `slides/` |
+| Member 1 | `@ChaitanyaUppalapati` | repo root, CI, `src/casmi/utils/`, `src/casmi/fingerprints/`, `src/casmi/retrieval/`, `models/fingerprint_mlp/`, experiment-log tooling, `docs/contribution_table.md` |
+| Member 2 | `@Ashley96yy` | `data/`, `src/casmi/data/`, `src/casmi/preprocess/`, `notebooks/` (loading + EDA), `models/spectrum_cnn/`, final `README.md` |
+| Member 3 | `@member3-gh` (pending) | `baselines/b1_mass_only/`, `baselines/b2_library_search/`, `models/spectrum_encoders/` |
+| Member 4 | `@ArpanaSinghSJSU` | `src/casmi/candidates/`, `kaggle/datasets/coconut/`, `models/spectrum_formula/` |
+| Member 5 | `@member5-gh` (pending) | `src/casmi/evaluation/`, `data/splits/`, `baselines/b3_integrated/`, `models/rerankers/`, `docs/ablations/` |
+| Member 6 | `@member6-gh` (pending) | `src/casmi/submission/`, `kaggle/` (offline notebook, code dataset), `baselines/b0_placeholder/`, `models/compact/`, `experiments/leaderboard/`, `docs/runtime_report.md` |
+| Member 7 | `@rahulmohannett` | `models/spectra_pooling/`, `docs/competition_summary.md`, `docs/error_analysis/`, `report/` |
+| Member 8 | `@aswin215` | `models/ensembles/`, `docs/public_approaches.md`, `slides/` |
 
-**To activate ownership:** replace each `@memberN-gh` in this table and in `.github/CODEOWNERS` with the real username, and add every member as a collaborator with write access.
+**Pending handles:** Members 3, 5 and 6 still use placeholders. When their usernames are known, replace `@member3-gh`, `@member5-gh` and `@member6-gh` here and in `.github/CODEOWNERS`, and add them as collaborators with write access. Until then, PRs into their folders need one approval from any member.
 
 ## 2. How the pieces fit (integration contract)
 

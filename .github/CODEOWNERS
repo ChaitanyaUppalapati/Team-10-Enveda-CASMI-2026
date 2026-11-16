@@ -2,37 +2,37 @@
 # Directory ownership for Team 10. GitHub requests a review from the owner of every path a PR touches.
 # The LAST matching pattern wins, so specific paths come after general ones.
 #
-# Placeholder handles: replace @memberN-gh with each member's real GitHub username
-# (see the ownership table in CONTRIBUTING.md). Each owner must be a repo collaborator
-# with write access, or GitHub ignores the entry.
+# Still placeholders: @member3-gh, @member5-gh, @member6-gh. Replace them with the real
+# GitHub usernames once known (and in the table in CONTRIBUTING.md). Each owner must be a
+# repo collaborator with write access, or GitHub ignores the entry.
 
 # ---------- Default: repo-wide files belong to Member 1 (repo + integration lead) ----------
-*                                   @member1-gh
+*                                   @ChaitanyaUppalapati
 
 # ---------- Shared contracts (any change must be approved by BOTH Member 1 and Member 5) ----------
-/src/casmi/interfaces.py            @member1-gh @member5-gh
-/tests/test_interfaces.py           @member1-gh @member5-gh
+/src/casmi/interfaces.py            @ChaitanyaUppalapati @member5-gh
+/tests/test_interfaces.py           @ChaitanyaUppalapati @member5-gh
 
 # ---------- Docs owned by Member 2 ----------
-/README.md                          @member2-gh @member1-gh
+/README.md                          @Ashley96yy @ChaitanyaUppalapati
 
 # ---------- Member 1: fingerprints, retrieval, utils, experiment log tooling ----------
-/src/casmi/utils/                   @member1-gh
-/src/casmi/fingerprints/            @member1-gh
-/src/casmi/retrieval/               @member1-gh
-/tests/fingerprints/                @member1-gh
-/tests/retrieval/                   @member1-gh
-/models/fingerprint_mlp/            @member1-gh
-/docs/contribution_table.md         @member1-gh
+/src/casmi/utils/                   @ChaitanyaUppalapati
+/src/casmi/fingerprints/            @ChaitanyaUppalapati
+/src/casmi/retrieval/               @ChaitanyaUppalapati
+/tests/fingerprints/                @ChaitanyaUppalapati
+/tests/retrieval/                   @ChaitanyaUppalapati
+/models/fingerprint_mlp/            @ChaitanyaUppalapati
+/docs/contribution_table.md         @ChaitanyaUppalapati
 
 # ---------- Member 2: data loading, EDA, preprocessing ----------
-/data/                              @member2-gh
-/src/casmi/data/                    @member2-gh
-/src/casmi/preprocess/              @member2-gh
-/tests/data/                        @member2-gh
-/tests/preprocess/                  @member2-gh
-/notebooks/                         @member2-gh
-/models/spectrum_cnn/               @member2-gh
+/data/                              @Ashley96yy
+/src/casmi/data/                    @Ashley96yy
+/src/casmi/preprocess/              @Ashley96yy
+/tests/data/                        @Ashley96yy
+/tests/preprocess/                  @Ashley96yy
+/notebooks/                         @Ashley96yy
+/models/spectrum_cnn/               @Ashley96yy
 
 # ---------- Member 3: baselines B1 / B2, spectrum encoders ----------
 /baselines/b1_mass_only/            @member3-gh
@@ -40,9 +40,9 @@
 /models/spectrum_encoders/          @member3-gh
 
 # ---------- Member 4: candidate databases (COCONUT, PubChem), spectrum+formula models ----------
-/src/casmi/candidates/              @member4-gh
-/tests/candidates/                  @member4-gh
-/models/spectrum_formula/           @member4-gh
+/src/casmi/candidates/              @ArpanaSinghSJSU
+/tests/candidates/                  @ArpanaSinghSJSU
+/models/spectrum_formula/           @ArpanaSinghSJSU
 
 # ---------- Member 5: evaluation, validation split, rerankers, B3, final selection ----------
 /data/splits/                       @member5-gh
@@ -58,21 +58,21 @@
 /baselines/b0_placeholder/          @member6-gh
 /kaggle/                            @member6-gh
 # COCONUT Kaggle Dataset belongs to Member 4 (must come after /kaggle/ above)
-/kaggle/datasets/coconut/           @member4-gh
+/kaggle/datasets/coconut/           @ArpanaSinghSJSU
 /models/compact/                    @member6-gh
 /experiments/leaderboard/           @member6-gh
 /docs/runtime_report.md             @member6-gh
 
 # ---------- Member 7: pooling models, error analysis, report ----------
-/models/spectra_pooling/            @member7-gh
-/docs/competition_summary.md        @member7-gh
-/docs/error_analysis/               @member7-gh
-/report/                            @member7-gh
+/models/spectra_pooling/            @rahulmohannett
+/docs/competition_summary.md        @rahulmohannett
+/docs/error_analysis/               @rahulmohannett
+/report/                            @rahulmohannett
 
 # ---------- Member 8: ensembles, public-approach review, slides ----------
-/models/ensembles/                  @member8-gh
-/docs/public_approaches.md          @member8-gh
-/slides/                            @member8-gh
+/models/ensembles/                  @aswin215
+/docs/public_approaches.md          @aswin215
+/slides/                            @aswin215
 
 # ---------- Shared, append-only: every member adds their own experiment entries ----------
-/experiments/entries/               @member1-gh @member2-gh @member3-gh @member4-gh @member5-gh @member6-gh @member7-gh @member8-gh
+/experiments/entries/               @ChaitanyaUppalapati @Ashley96yy @member3-gh @ArpanaSinghSJSU @member5-gh @member6-gh @rahulmohannett @aswin215
