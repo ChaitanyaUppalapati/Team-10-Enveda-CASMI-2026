@@ -1,0 +1,8 @@
+# Owner: Member 3
+model_id: spectrum_encoders.arch1_residual_mlp
+seed: 2026
+
+data:
+  preprocess: default
+model: {}
+train: {}

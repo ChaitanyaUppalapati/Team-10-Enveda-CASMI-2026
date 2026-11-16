@@ -1,0 +1,78 @@
+# Owner: Member 1
+# Directory ownership for Team 10. GitHub requests a review from the owner of every path a PR touches.
+# The LAST matching pattern wins, so specific paths come after general ones.
+#
+# Placeholder handles: replace @memberN-gh with each member's real GitHub username
+# (see the ownership table in CONTRIBUTING.md). Each owner must be a repo collaborator
+# with write access, or GitHub ignores the entry.
+
+# ---------- Default: repo-wide files belong to Member 1 (repo + integration lead) ----------
+*                                   @member1-gh
+
+# ---------- Shared contracts (any change must be approved by BOTH Member 1 and Member 5) ----------
+/src/casmi/interfaces.py            @member1-gh @member5-gh
+/tests/test_interfaces.py           @member1-gh @member5-gh
+
+# ---------- Docs owned by Member 2 ----------
+/README.md                          @member2-gh @member1-gh
+
+# ---------- Member 1: fingerprints, retrieval, utils, experiment log tooling ----------
+/src/casmi/utils/                   @member1-gh
+/src/casmi/fingerprints/            @member1-gh
+/src/casmi/retrieval/               @member1-gh
+/tests/fingerprints/                @member1-gh
+/tests/retrieval/                   @member1-gh
+/models/fingerprint_mlp/            @member1-gh
+/docs/contribution_table.md         @member1-gh
+
+# ---------- Member 2: data loading, EDA, preprocessing ----------
+/data/                              @member2-gh
+/src/casmi/data/                    @member2-gh
+/src/casmi/preprocess/              @member2-gh
+/tests/data/                        @member2-gh
+/tests/preprocess/                  @member2-gh
+/notebooks/                         @member2-gh
+/models/spectrum_cnn/               @member2-gh
+
+# ---------- Member 3: baselines B1 / B2, spectrum encoders ----------
+/baselines/b1_mass_only/            @member3-gh
+/baselines/b2_library_search/       @member3-gh
+/models/spectrum_encoders/          @member3-gh
+
+# ---------- Member 4: candidate databases (COCONUT, PubChem), spectrum+formula models ----------
+/src/casmi/candidates/              @member4-gh
+/tests/candidates/                  @member4-gh
+/models/spectrum_formula/           @member4-gh
+
+# ---------- Member 5: evaluation, validation split, rerankers, B3, final selection ----------
+/data/splits/                       @member5-gh
+/src/casmi/evaluation/              @member5-gh
+/tests/evaluation/                  @member5-gh
+/baselines/b3_integrated/           @member5-gh
+/models/rerankers/                  @member5-gh
+/docs/ablations/                    @member5-gh
+
+# ---------- Member 6: submission, Kaggle offline notebook, runtime, compact models ----------
+/src/casmi/submission/              @member6-gh
+/tests/submission/                  @member6-gh
+/baselines/b0_placeholder/          @member6-gh
+/kaggle/                            @member6-gh
+# COCONUT Kaggle Dataset belongs to Member 4 (must come after /kaggle/ above)
+/kaggle/datasets/coconut/           @member4-gh
+/models/compact/                    @member6-gh
+/experiments/leaderboard/           @member6-gh
+/docs/runtime_report.md             @member6-gh
+
+# ---------- Member 7: pooling models, error analysis, report ----------
+/models/spectra_pooling/            @member7-gh
+/docs/competition_summary.md        @member7-gh
+/docs/error_analysis/               @member7-gh
+/report/                            @member7-gh
+
+# ---------- Member 8: ensembles, public-approach review, slides ----------
+/models/ensembles/                  @member8-gh
+/docs/public_approaches.md          @member8-gh
+/slides/                            @member8-gh
+
+# ---------- Shared, append-only: every member adds their own experiment entries ----------
+/experiments/entries/               @member1-gh @member2-gh @member3-gh @member4-gh @member5-gh @member6-gh @member7-gh @member8-gh

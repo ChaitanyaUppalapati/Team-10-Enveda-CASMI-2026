@@ -1,0 +1,8 @@
+# Owner: Member 6
+model_id: baselines.b0_placeholder
+seed: 2026
+
+data:
+  preprocess: default
+model: {}
+train: {}

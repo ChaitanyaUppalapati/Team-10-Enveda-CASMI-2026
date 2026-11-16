@@ -1,0 +1,8 @@
+# Owner: Member 2
+model_id: spectrum_cnn.arch2_multires_cnn
+seed: 2026
+
+data:
+  preprocess: default
+model: {}
+train: {}

@@ -1,0 +1,51 @@
+# Owner: Member 1
+
+# --- Data: never commit competition data or derived arrays ---
+/data/*
+!/data/README.md
+!/data/splits/
+*.parquet
+!/data/splits/*.parquet
+*.npy
+*.npz
+*.h5
+*.hdf5
+*.mgf
+*.msp
+
+# --- Model artifacts and run outputs ---
+/outputs/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.joblib
+*.pkl
+*.lgb
+wandb/
+mlruns/
+lightning_logs/
+
+# --- Kaggle ---
+kaggle.json
+/kaggle/datasets/*/build/
+/kaggle/notebooks/submission.csv
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.env
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# --- OS / editors ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

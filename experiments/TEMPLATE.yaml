@@ -1,0 +1,10 @@
+# Copy to experiments/entries/YYYY-MM-DD_memberN_<model_id>.yaml
+date: 2026-11-17            # YYYY-MM-DD
+member: 1                   # 1-8
+model_id: fingerprint_mlp.arch1_mlp
+version: v1                 # bump per change
+change: "first version"     # what changed vs the previous version
+val_mrr: null               # MRR@25 on the frozen validation split
+lb_score: null              # public leaderboard MRR@25, if submitted
+submitted: false
+notes: ""

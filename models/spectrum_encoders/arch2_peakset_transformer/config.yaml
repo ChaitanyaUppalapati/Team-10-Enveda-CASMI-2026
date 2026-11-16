@@ -1,0 +1,8 @@
+# Owner: Member 3
+model_id: spectrum_encoders.arch2_peakset_transformer
+seed: 2026
+
+data:
+  preprocess: default
+model: {}
+train: {}

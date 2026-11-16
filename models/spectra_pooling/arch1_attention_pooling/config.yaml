@@ -1,0 +1,8 @@
+# Owner: Member 7
+model_id: spectra_pooling.arch1_attention_pooling
+seed: 2026
+
+data:
+  preprocess: default
+model: {}
+train: {}

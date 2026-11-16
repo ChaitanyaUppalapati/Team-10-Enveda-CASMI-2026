@@ -1,0 +1,9 @@
+# Owner: Member 1
+* text=auto eol=lf
+*.bat text eol=crlf
+*.parquet binary
+*.png binary
+*.jpg binary
+*.pdf binary
+*.pptx binary
+*.xlsx binary

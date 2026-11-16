@@ -1,0 +1,9 @@
+# Owner: Member 8
+model_id: ensembles.arch2_stacked_meta
+seed: 2026
+inputs: []  # model_ids whose scores this model consumes
+
+data:
+  preprocess: default
+model: {}
+train: {}

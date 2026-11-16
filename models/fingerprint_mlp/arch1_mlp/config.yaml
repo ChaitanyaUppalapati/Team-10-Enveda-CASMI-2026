@@ -1,0 +1,8 @@
+# Owner: Member 1
+model_id: fingerprint_mlp.arch1_mlp
+seed: 2026
+
+data:
+  preprocess: default
+model: {}
+train: {}

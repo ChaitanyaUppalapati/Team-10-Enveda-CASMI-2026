@@ -1,0 +1,8 @@
+# Owner: Member 3
+model_id: baselines.b1_mass_only
+seed: 2026
+
+data:
+  preprocess: default
+model: {}
+train: {}

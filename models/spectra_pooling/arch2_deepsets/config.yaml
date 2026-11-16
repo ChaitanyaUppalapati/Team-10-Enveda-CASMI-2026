@@ -1,0 +1,8 @@
+# Owner: Member 7
+model_id: spectra_pooling.arch2_deepsets
+seed: 2026
+
+data:
+  preprocess: default
+model: {}
+train: {}

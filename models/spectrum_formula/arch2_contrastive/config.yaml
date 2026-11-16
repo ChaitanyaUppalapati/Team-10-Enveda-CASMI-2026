@@ -1,0 +1,8 @@
+# Owner: Member 4
+model_id: spectrum_formula.arch2_contrastive
+seed: 2026
+
+data:
+  preprocess: default
+model: {}
+train: {}

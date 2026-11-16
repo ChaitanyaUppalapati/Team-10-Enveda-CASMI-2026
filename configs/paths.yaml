@@ -1,0 +1,22 @@
+# Owner: Member 1
+# Path roots used by every module via casmi.utils.config.load_paths().
+# Relative paths resolve against the repo root. Override any root with env vars:
+#   CASMI_DATA_DIR, CASMI_OUTPUT_DIR, CASMI_CANDIDATES_DIR
+# The "kaggle" profile is chosen automatically inside a Kaggle kernel, or set CASMI_ENV=kaggle.
+
+local:
+  data_dir: data
+  raw_dir: data/raw
+  processed_dir: data/processed
+  splits_dir: data/splits
+  candidates_dir: data/candidates
+  output_dir: outputs
+
+kaggle:
+  # TODO(Member 6): confirm the competition input slug and the team dataset slugs.
+  data_dir: /kaggle/input/enveda-casmi26-molecule-id-mass-spectra
+  raw_dir: /kaggle/input/enveda-casmi26-molecule-id-mass-spectra
+  processed_dir: /kaggle/working/processed
+  splits_dir: /kaggle/input/casmi-code/splits
+  candidates_dir: /kaggle/input/casmi26-coconut
+  output_dir: /kaggle/working/outputs

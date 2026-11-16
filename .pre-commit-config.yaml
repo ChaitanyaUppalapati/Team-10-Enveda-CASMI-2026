@@ -1,0 +1,19 @@
+# Owner: Member 1. Optional but recommended: `pip install pre-commit && pre-commit install`
+# Strips notebook outputs (avoids merge conflicts) and runs ruff before each commit.
+repos:
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.7.1
+    hooks:
+      - id: nbstripout
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-added-large-files
+        args: [--maxkb=5000]
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
