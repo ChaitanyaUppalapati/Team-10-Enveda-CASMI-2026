@@ -1,8 +1,26 @@
-# Owner: Member 2
+# Owner: Member 2. Paths under data/predict are relative to member2_dir.
 model_id: spectrum_cnn.arch1_cnn1d
-seed: 2026
-
+seed: 42
+device: auto
+member2_dir: outputs/member2  # Override with CASMI_MEMBER2_DIR.
 data:
-  preprocess: default
-model: {}
-train: {}
+  train: prototype_data/train_prototype.parquet
+  val: prototype_data/val_prototype.parquet
+  split_file: structure_split_scoring_safe.json
+model:
+  architecture: cnn1d
+  mz_max: 2200
+  bin_width: 1.0
+  fp_size: 1024
+  fp_radius: 2
+train:
+  batch_size: 32
+  epochs: 8
+  patience: 3
+  min_delta: 0.0001
+  lr: 0.0003
+  weight_decay: 0.0001
+  cpu_threads: 2
+predict:
+  checkpoint: checkpoints/cnn1d_best_val_loss.pt
+  batch_size: 32
