@@ -1,22 +1,18 @@
-"""Multi-resolution CNN: training entry point. Owner: Member 2."""
+"""multires_cnn train entry point. Owner: Member 2."""
 
-from __future__ import annotations
-
-import argparse
+import sys
 from pathlib import Path
 
-from casmi.utils import load_config, set_seed
-
 HERE = Path(__file__).resolve().parent
+# Direct scripts work from any current directory in this source checkout.
+sys.path.insert(0, str(HERE.parents[2] / "src"))
+sys.path.insert(0, str(HERE.parent))
+
+from common.cli import train_main  # noqa: E402
 
 
-def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--config", type=Path, default=HERE / "config.yaml")
-    args = parser.parse_args(argv)
-    cfg = load_config(args.config)
-    set_seed(cfg.get("seed", 2026))
-    raise NotImplementedError("TODO(Member 2): train spectrum_cnn.arch2_multires_cnn")
+def main(argv=None):
+    return train_main(HERE, "multires_cnn", argv)
 
 
 if __name__ == "__main__":

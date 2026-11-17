@@ -1,29 +1,19 @@
-"""Multi-resolution CNN: writes CandidateScores for a split. Owner: Member 2."""
+"""multires_cnn predict entry point. Owner: Member 2."""
 
-from __future__ import annotations
-
-import argparse
+import sys
 from pathlib import Path
 
-from casmi.interfaces import SPLITS, write_scores
-from casmi.utils import load_config
-
 HERE = Path(__file__).resolve().parent
+# Direct scripts work from any current directory in this source checkout.
+sys.path.insert(0, str(HERE.parents[2] / "src"))
+sys.path.insert(0, str(HERE.parent))
+
+from common.cli import predict_main  # noqa: E402
+from common.runner import predict  # noqa: E402, F401
 
 
-def predict(cfg: dict, split: str):
-    """Return a CandidateScores DataFrame (query_id, inchikey14, score) for ``split``."""
-    raise NotImplementedError("TODO(Member 2): predict spectrum_cnn.arch2_multires_cnn")
-
-
-def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--config", type=Path, default=HERE / "config.yaml")
-    parser.add_argument("--split", choices=SPLITS, default="val")
-    args = parser.parse_args(argv)
-    cfg = load_config(args.config)
-    path = write_scores(predict(cfg, args.split), cfg["model_id"], args.split)
-    print(f"wrote {path}")
+def main(argv=None):
+    return predict_main(HERE, "multires_cnn", argv)
 
 
 if __name__ == "__main__":

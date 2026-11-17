@@ -1,0 +1,17 @@
+# Member 2's own smoke run; no frozen-validation or leaderboard result.
+date: 2026-11-17
+member: 2
+model_id: spectrum_cnn.arch1_cnn1d
+version: prototype-module-smoke-v1
+change: "Notebook-to-module conversion: one-epoch CPU training smoke check"
+val_mrr: null
+lb_score: null
+submitted: false
+notes: >-
+  Smoke only: seed 42, 64 training spectra and 64 validation spectra,
+  batch size 32, one epoch, RDKit 2026.03.3.
+  Observed smoke validation BCE loss 0.9268060922622681.
+  This loss is not MRR@25 and is not comparable to full prototype training.
+  No frozen validation, no leaderboard submission, and no new accuracy claim.
+  Imported notebook checkpoints were preserved. Full 2000-row prediction
+  parity and synthetic external-candidate scoring were checked separately.
