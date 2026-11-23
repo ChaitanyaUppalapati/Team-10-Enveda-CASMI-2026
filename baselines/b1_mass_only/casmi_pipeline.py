@@ -4,6 +4,7 @@ Provides data loading, validation splitting, candidate retrieval, spectral libra
 search, neural fingerprint predictors, MRR@25 evaluation, submission writing, run
 logging and figures for the Enveda CASMI 2026 competition.
 """
+
 import glob
 import hashlib
 import os
@@ -41,14 +42,36 @@ ADDUCTS = {
 }
 QUERY_ADDUCTS = ["[M+H]+", "[M-H]-", "[M+Na]+", "[M+NH4]+", "[M+K]+", "[M+Cl]-", "[M+CH2O2-H]-"]
 ADDUCT_INDEX = {a: i + 1 for i, a in enumerate(ADDUCTS)}  # 0 means "other"
+N_ADDUCTS = len(ADDUCTS) + 1
 
 MONO = {
-    "H": 1.00782503207, "B": 11.0093054, "C": 12.0, "N": 14.0030740048, "O": 15.99491461956,
-    "F": 18.99840322, "Na": 22.9897692809, "Mg": 23.9850417, "Al": 26.98153863, "Si": 27.9769265325,
-    "P": 30.97376163, "S": 31.972071, "Cl": 34.96885268, "K": 38.96370668, "Ca": 39.96259098,
-    "Fe": 55.9349375, "Co": 58.933195, "Ni": 57.9353429, "Cu": 62.9295975, "Zn": 63.9291422,
-    "As": 74.9215965, "Se": 79.9165213, "Br": 78.9183371, "Sn": 119.9021947, "I": 126.904473,
-    "Pt": 194.9647911, "Hg": 201.970643,
+    "H": 1.00782503207,
+    "B": 11.0093054,
+    "C": 12.0,
+    "N": 14.0030740048,
+    "O": 15.99491461956,
+    "F": 18.99840322,
+    "Na": 22.9897692809,
+    "Mg": 23.9850417,
+    "Al": 26.98153863,
+    "Si": 27.9769265325,
+    "P": 30.97376163,
+    "S": 31.972071,
+    "Cl": 34.96885268,
+    "K": 38.96370668,
+    "Ca": 39.96259098,
+    "Fe": 55.9349375,
+    "Co": 58.933195,
+    "Ni": 57.9353429,
+    "Cu": 62.9295975,
+    "Zn": 63.9291422,
+    "As": 74.9215965,
+    "Se": 79.9165213,
+    "Br": 78.9183371,
+    "Sn": 119.9021947,
+    "I": 126.904473,
+    "Pt": 194.9647911,
+    "Hg": 201.970643,
 }
 
 
@@ -56,8 +79,13 @@ def find_data_dir(explicit=None):
     """Return the folder holding train.parquet on Kaggle, Colab or a local machine."""
     if explicit and os.path.exists(os.path.join(explicit, "train.parquet")):
         return explicit
-    for root in ["/kaggle/input/**", "/content/casmi_data", "../enveda-CASMI26-molecule-id-mass-spectra",
-                 "../../enveda-CASMI26-molecule-id-mass-spectra", "."]:
+    for root in [
+        "/kaggle/input/**",
+        "/content/casmi_data",
+        "../enveda-CASMI26-molecule-id-mass-spectra",
+        "../../enveda-CASMI26-molecule-id-mass-spectra",
+        ".",
+    ]:
         hits = glob.glob(os.path.join(root, "train.parquet"), recursive=True)
         if hits:
             return os.path.dirname(hits[0])
@@ -84,14 +112,26 @@ def neutral_mass(precursor_mz, adduct, mode=None):
 
 def add_neutral_mass(df):
     df = df.copy()
-    df["neutral_mass"] = [neutral_mass(m, a, p) for m, a, p in zip(df.precursor_mz, df.adduct, df.ionization_mode)]
+    df["neutral_mass"] = [
+        neutral_mass(m, a, p) for m, a, p in zip(df.precursor_mz, df.adduct, df.ionization_mode, strict=False)
+    ]
     return df
 
 
 def load_meta(data_dir):
     """Load everything in train.parquet except the peak lists."""
-    cols = ["ingest_lib", "inchikey14", "normalized_smiles", "molecular_formula", "ionization_mode",
-            "instrument_type", "adduct", "precursor_mz", "precursor_error_ppm", "num_peaks"]
+    cols = [
+        "ingest_lib",
+        "inchikey14",
+        "normalized_smiles",
+        "molecular_formula",
+        "ionization_mode",
+        "instrument_type",
+        "adduct",
+        "precursor_mz",
+        "precursor_error_ppm",
+        "num_peaks",
+    ]
     meta = pd.read_parquet(os.path.join(data_dir, "train.parquet"), columns=cols)
     meta["row_id"] = np.arange(len(meta))
     for col in ["ingest_lib", "ionization_mode", "instrument_type", "adduct"]:
@@ -102,7 +142,7 @@ def load_meta(data_dir):
 
 def _unit(key, salt):
     digest = hashlib.md5(f"{salt}:{key}".encode()).hexdigest()
-    return int(digest[:12], 16) / float(16 ** 12)
+    return int(digest[:12], 16) / float(16**12)
 
 
 def make_split(meta, frac=0.10, salt="casmi-split-v1", max_query_spectra=6):
@@ -234,7 +274,9 @@ def rank_table(rankings, truth, pool_keys):
     for row in truth.itertuples():
         keys = [pool_keys[i] for i in rankings[row.molecule_id][:TOP_K]]
         rank = keys.index(row.true_key) + 1 if row.true_key in keys else 0
-        records.append((row.molecule_id, row.cls, row.query_lib == "enveda-np-examples", 1.0 / rank if rank else 0.0, rank))
+        records.append(
+            (row.molecule_id, row.cls, row.query_lib == "enveda-np-examples", 1.0 / rank if rank else 0.0, rank)
+        )
     return pd.DataFrame(records, columns=["molecule_id", "cls", "np_proxy", "rr", "rank"])
 
 
@@ -244,15 +286,28 @@ def evaluate(rankings, truth, pool_keys, ci=False):
     rng = np.random.default_rng(3)
 
     def summarize(part):
-        out = {"n": len(part), "MRR@25": round(part.rr.mean(), 4), "top1": round((part["rank"] == 1).mean(), 4),
-               "top5": round(part["rank"].between(1, 5).mean(), 4), "top25": round((part["rank"] > 0).mean(), 4)}
+        out = {
+            "n": len(part),
+            "MRR@25": round(part.rr.mean(), 4),
+            "top1": round((part["rank"] == 1).mean(), 4),
+            "top5": round(part["rank"].between(1, 5).mean(), 4),
+            "top25": round((part["rank"] > 0).mean(), 4),
+        }
         if ci and len(part):
             draws = rng.choice(part.rr.to_numpy(), size=(1000, len(part))).mean(axis=1)
-            out["MRR_ci_low"], out["MRR_ci_high"] = round(np.quantile(draws, 0.025), 4), round(np.quantile(draws, 0.975), 4)
+            out["MRR_ci_low"], out["MRR_ci_high"] = (
+                round(np.quantile(draws, 0.025), 4),
+                round(np.quantile(draws, 0.975), 4),
+            )
         return out
 
-    table = pd.DataFrame({"class 1": summarize(res[res.cls == 1]), "class 2": summarize(res[res.cls == 2]),
-                          "np proxy": summarize(res[res.np_proxy])}).T
+    table = pd.DataFrame(
+        {
+            "class 1": summarize(res[res.cls == 1]),
+            "class 2": summarize(res[res.cls == 2]),
+            "np proxy": summarize(res[res.np_proxy]),
+        }
+    ).T
     balanced = table.loc[["class 1", "class 2"]].mean().round(4)
     balanced["n"] = table.loc[["class 1", "class 2"], "n"].sum()
     table.loc["balanced"] = balanced
@@ -264,6 +319,7 @@ def truth_table(queries):
 
 
 # ---------- spectra ----------
+
 
 def clean_spectrum(mz, intensity, precursor, max_peaks=100, floor=0.005):
     """Drop the precursor region, apply an intensity floor, cap the peak count and sqrt-scale intensities."""
@@ -302,12 +358,15 @@ def read_spectra(parquet_path, row_ids, max_peaks=100):
             precursor = table["precursor_mz"].to_numpy()
             for position in range(lo, hi):
                 local = sorted_ids[position] - start
-                mz, intensity = clean_spectrum(mz_val[mz_off[local]:mz_off[local + 1]],
-                                               in_val[in_off[local]:in_off[local + 1]],
-                                               precursor[local], max_peaks)
+                mz, intensity = clean_spectrum(
+                    mz_val[mz_off[local] : mz_off[local + 1]],
+                    in_val[in_off[local] : in_off[local + 1]],
+                    precursor[local],
+                    max_peaks,
+                )
                 target = order[position]
-                out_mz[target, :len(mz)] = mz
-                out_in[target, :len(mz)] = intensity
+                out_mz[target, : len(mz)] = mz
+                out_in[target, : len(mz)] = intensity
             del table, mz_col, in_col, mz_val, in_val
         start += n_rows
     return out_mz, out_in
@@ -315,7 +374,9 @@ def read_spectra(parquet_path, row_ids, max_peaks=100):
 
 def load_test(data_dir):
     path = os.path.join(data_dir, "test.parquet")
-    test = add_neutral_mass(pd.read_parquet(path, columns=["molecule_id", "spectrum_id", "adduct", "ionization_mode", "precursor_mz"]))
+    test = add_neutral_mass(
+        pd.read_parquet(path, columns=["molecule_id", "spectrum_id", "adduct", "ionization_mode", "precursor_mz"])
+    )
     test["row_id"] = np.arange(len(test))
     return test, path
 
@@ -350,16 +411,29 @@ class SpectralLibrary:
         for mass in query_masses:
             needed[window_indices(pool_mass, mass, ppm)] = True
         wanted = set(pool.key.to_numpy()[needed])
-        usable = meta[library_mask & meta.good_label.to_numpy() & meta.inchikey14.isin(wanted).to_numpy() & (meta.num_peaks >= 3).to_numpy()].copy()
+        usable = meta[
+            library_mask
+            & meta.good_label.to_numpy()
+            & meta.inchikey14.isin(wanted).to_numpy()
+            & (meta.num_peaks >= 3).to_numpy()
+        ].copy()
         # Prefer the test instrument and simple adducts when a structure has many spectra.
-        usable["priority"] = (usable.instrument_type.astype(str) != "timsTOF").astype(int) + (~usable.adduct.isin(QUERY_ADDUCTS)).astype(int)
+        usable["priority"] = (usable.instrument_type.astype(str) != "timsTOF").astype(int) + (
+            ~usable.adduct.isin(QUERY_ADDUCTS)
+        ).astype(int)
         usable = usable.sort_values(["inchikey14", "ionization_mode", "priority", "row_id"], kind="stable")
-        usable = usable.groupby(["inchikey14", "ionization_mode"], observed=True).head(per_candidate).reset_index(drop=True)
-        self.mz, self.intensity = read_spectra(os.path.join(data_dir, "train.parquet"), usable.row_id.to_numpy(), max_peaks)
+        usable = (
+            usable.groupby(["inchikey14", "ionization_mode"], observed=True).head(per_candidate).reset_index(drop=True)
+        )
+        self.mz, self.intensity = read_spectra(
+            os.path.join(data_dir, "train.parquet"), usable.row_id.to_numpy(), max_peaks
+        )
         self.n_peaks = (self.intensity > 0).sum(axis=1)
         self.precursor = usable.precursor_mz.to_numpy()
         self.index = {}
-        for position, (key, mode) in enumerate(zip(usable.inchikey14.to_numpy(), usable.ionization_mode.astype(str).to_numpy())):
+        for position, (key, mode) in enumerate(
+            zip(usable.inchikey14.to_numpy(), usable.ionization_mode.astype(str).to_numpy(), strict=False)
+        ):
             self.index.setdefault((key, mode), []).append(position)
 
 
@@ -408,8 +482,10 @@ def rank_b2(pool, library, spectra_mz, spectra_in, group, ppm=10.0, modified=Tru
 def run_b2(pool, library, spectra, spectra_mz, spectra_in, **kwargs):
     spectra = spectra.copy()
     spectra["pos"] = np.arange(len(spectra))
-    return {mol: rank_b2(pool, library, spectra_mz, spectra_in, group, **kwargs)
-            for mol, group in spectra.groupby("molecule_id", sort=False)}
+    return {
+        mol: rank_b2(pool, library, spectra_mz, spectra_in, group, **kwargs)
+        for mol, group in spectra.groupby("molecule_id", sort=False)
+    }
 
 
 def write_submission(rankings, pool, test, path="submission.csv"):
@@ -430,9 +506,16 @@ def write_submission(rankings, pool, test, path="submission.csv"):
 
 def log_line(version, change, table, lb_score=""):
     """Row for the team experiment log: date, version, change, val MRR, LB score."""
-    return {"date": time.strftime("%Y-%m-%d"), "version": version, "change": change,
-            "val_MRR@25": float(table.loc["balanced", "MRR@25"]), "class1": float(table.loc["class 1", "MRR@25"]),
-            "class2": float(table.loc["class 2", "MRR@25"]), "np_proxy": float(table.loc["np proxy", "MRR@25"]), "LB": lb_score}
+    return {
+        "date": time.strftime("%Y-%m-%d"),
+        "version": version,
+        "change": change,
+        "val_MRR@25": float(table.loc["balanced", "MRR@25"]),
+        "class1": float(table.loc["class 1", "MRR@25"]),
+        "class2": float(table.loc["class 2", "MRR@25"]),
+        "np_proxy": float(table.loc["np proxy", "MRR@25"]),
+        "LB": lb_score,
+    }
 
 
 # ---------- neural fingerprint predictors ----------
@@ -444,6 +527,7 @@ def morgan_packed(smiles_list, n_bits=FP_BITS, radius=2):
     """Packed Morgan fingerprints. Rows for unparsable SMILES stay all zero."""
     from rdkit import Chem, RDLogger
     from rdkit.Chem import rdFingerprintGenerator
+
     RDLogger.DisableLog("rdApp.*")
     generator = rdFingerprintGenerator.GetMorganGenerator(radius=radius, fpSize=n_bits)
     out = np.zeros((len(smiles_list), n_bits // 8), dtype=np.uint8)
@@ -469,8 +553,9 @@ def build_models():
     class ResidualBlock(nn.Module):
         def __init__(self, width, dropout):
             super().__init__()
-            self.net = nn.Sequential(nn.LayerNorm(width), nn.Linear(width, width), nn.GELU(),
-                                     nn.Dropout(dropout), nn.Linear(width, width))
+            self.net = nn.Sequential(
+                nn.LayerNorm(width), nn.Linear(width, width), nn.GELU(), nn.Dropout(dropout), nn.Linear(width, width)
+            )
 
         def forward(self, x):
             return x + self.net(x)
@@ -478,7 +563,7 @@ def build_models():
     class ResidualMLP(nn.Module):
         """1-Da binned spectrum plus precursor and adduct, through residual blocks."""
 
-        def __init__(self, n_bins=1200, width=2048, depth=4, dropout=0.2, n_adducts=len(ADDUCTS) + 1):
+        def __init__(self, n_bins=1200, width=2048, depth=4, dropout=0.2, n_adducts=N_ADDUCTS):
             super().__init__()
             self.n_bins = n_bins
             self.adduct = nn.Embedding(n_adducts, 32)
@@ -496,15 +581,16 @@ def build_models():
     class PeakSetTransformer(nn.Module):
         """Each peak is a token. No positional encoding, so peak order doesn't matter."""
 
-        def __init__(self, d_model=256, layers=4, heads=8, dropout=0.1, n_freq=32, n_adducts=len(ADDUCTS) + 1):
+        def __init__(self, d_model=256, layers=4, heads=8, dropout=0.1, n_freq=32, n_adducts=N_ADDUCTS):
             super().__init__()
             freqs = torch.logspace(-2.0, 3.0, n_freq) * 2 * torch.pi / 1000.0
             self.register_buffer("freqs", freqs)
             self.peak = nn.Sequential(nn.Linear(4 * n_freq + 1, d_model), nn.GELU(), nn.Linear(d_model, d_model))
             self.precursor = nn.Sequential(nn.Linear(2 * n_freq, d_model), nn.GELU(), nn.Linear(d_model, d_model))
             self.adduct = nn.Embedding(n_adducts, d_model)
-            layer = nn.TransformerEncoderLayer(d_model, heads, 4 * d_model, dropout, activation="gelu",
-                                               batch_first=True, norm_first=True)
+            layer = nn.TransformerEncoderLayer(
+                d_model, heads, 4 * d_model, dropout, activation="gelu", batch_first=True, norm_first=True
+            )
             self.encoder = nn.TransformerEncoder(layer, layers, enable_nested_tensor=False)
             self.head = nn.Sequential(nn.LayerNorm(d_model), nn.Linear(d_model, FP_BITS))
 
@@ -529,14 +615,18 @@ def adduct_ids(values):
 
 def predict_probs(model, mz, intensity, precursor, adduct, device, batch=512):
     import torch
+
     model.eval()
     chunks = []
     with torch.no_grad():
         for i in range(0, len(mz), batch):
             sl = slice(i, i + batch)
-            logits = model(torch.as_tensor(mz[sl], device=device), torch.as_tensor(intensity[sl], device=device),
-                           torch.as_tensor(precursor[sl], dtype=torch.float32, device=device),
-                           torch.as_tensor(adduct[sl], device=device))
+            logits = model(
+                torch.as_tensor(mz[sl], device=device),
+                torch.as_tensor(intensity[sl], device=device),
+                torch.as_tensor(precursor[sl], dtype=torch.float32, device=device),
+                torch.as_tensor(adduct[sl], device=device),
+            )
             chunks.append(torch.sigmoid(logits.float()).cpu().numpy())
     return np.concatenate(chunks)
 
@@ -560,15 +650,19 @@ def rank_by_fingerprint(pool, pool_fp_packed, spectra, probs, ppm=10.0):
     return rankings
 
 
-def train_model(model, data, val, device, epochs=10, batch=512, lr=3e-4, max_minutes=240, out_path="model.pt", log=print):
+def train_model(
+    model, data, val, device, epochs=10, batch=512, lr=3e-4, max_minutes=240, out_path="model.pt", log=print
+):
     """Train with BCE and keep the checkpoint with the best validation MRR@25.
 
     data: dict with mz, intensity, precursor, adduct, target_index, fp_packed.
     val: dict with pool, pool_fp, queries, mz, intensity, truth.
     """
     import contextlib
+
     import torch
     from torch import nn
+
     model = model.to(device)
     tensors = {k: torch.as_tensor(data[k]) for k in ["mz", "intensity", "precursor", "adduct", "target_index"]}
     tensors["precursor"] = tensors["precursor"].float()
@@ -577,7 +671,9 @@ def train_model(model, data, val, device, epochs=10, batch=512, lr=3e-4, max_min
     n = len(tensors["mz"])
     steps_total = epochs * max(n // batch, 1)
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
-    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=lr, total_steps=max(steps_total, 2), pct_start=0.05)
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(
+        optimizer, max_lr=lr, total_steps=max(steps_total, 2), pct_start=0.05
+    )
     loss_fn = nn.BCEWithLogitsLoss()
     use_amp = str(device).startswith("cuda")
     # Older GPUs such as the T4 have no native bfloat16, so they use float16 with loss scaling.
@@ -596,7 +692,7 @@ def train_model(model, data, val, device, epochs=10, batch=512, lr=3e-4, max_min
         order = torch.randperm(n)
         running, count = torch.zeros((), device=device), 0
         for i in range(0, n - batch + 1, batch):
-            sel = order[i:i + batch]
+            sel = order[i : i + batch]
             mz = tensors["mz"][sel].to(device)
             intensity = tensors["intensity"][sel].to(device)
             precursor = tensors["precursor"][sel].to(device)
@@ -619,12 +715,21 @@ def train_model(model, data, val, device, epochs=10, batch=512, lr=3e-4, max_min
             if (time.time() - start) / 60 > max_minutes:
                 break
         probs = predict_probs(model, val["mz"], val["intensity"], q_prec, q_adduct, device)
-        table = evaluate(rank_by_fingerprint(val["pool"], val["pool_fp"], q, probs), val["truth"], val["pool"].key.to_numpy())
+        table = evaluate(
+            rank_by_fingerprint(val["pool"], val["pool_fp"], q, probs), val["truth"], val["pool"].key.to_numpy()
+        )
         score = float(table.loc["balanced", "MRR@25"])
-        history.append({"epoch": epoch + 1, "minutes": round((time.time() - start) / 60, 2),
-                        "train_bce": float(running.item()) / max(count, 1), "val_MRR@25": score,
-                        "class1": float(table.loc["class 1", "MRR@25"]), "class2": float(table.loc["class 2", "MRR@25"]),
-                        "np_proxy": float(table.loc["np proxy", "MRR@25"])})
+        history.append(
+            {
+                "epoch": epoch + 1,
+                "minutes": round((time.time() - start) / 60, 2),
+                "train_bce": float(running.item()) / max(count, 1),
+                "val_MRR@25": score,
+                "class1": float(table.loc["class 1", "MRR@25"]),
+                "class2": float(table.loc["class 2", "MRR@25"]),
+                "np_proxy": float(table.loc["np proxy", "MRR@25"]),
+            }
+        )
         log(history[-1])
         if score > best:
             best = score
@@ -656,11 +761,13 @@ def fingerprint_metrics(spectra, probs, truth, pool, pool_fp):
 def get_device(prefer="auto"):
     """Pick CUDA, then TPU through torch_xla, then CPU."""
     import torch
+
     if prefer in ("auto", "cuda") and torch.cuda.is_available():
         return torch.device("cuda")
     if prefer in ("auto", "tpu"):
         try:
             import torch_xla
+
             return torch_xla.device()
         except Exception:
             pass
@@ -671,6 +778,7 @@ def get_device(prefer="auto"):
 def save_artifact(folder, model_name, model_kwargs, pool, pool_fp, settings):
     """Save everything a Kaggle submission needs next to model.pt, so RDKit isn't required there."""
     import json
+
     os.makedirs(folder, exist_ok=True)
     pool[["key", "smiles", "mass", "n_ref"]].to_parquet(os.path.join(folder, "pool.parquet"))
     np.save(os.path.join(folder, "pool_fp.npy"), pool_fp)
@@ -680,7 +788,9 @@ def save_artifact(folder, model_name, model_kwargs, pool, pool_fp, settings):
 
 def load_artifact(folder, device):
     import json
+
     import torch
+
     with open(os.path.join(folder, "artifact.json")) as handle:
         info = json.load(handle)
     model = build_models()[info["model_name"]](**info["model_kwargs"])
@@ -691,6 +801,7 @@ def load_artifact(folder, device):
 
 # ---------- environment, run logs, figures ----------
 
+
 def detect_platform():
     """Identify the runtime. Environment variables are checked first because a /kaggle
     folder or the google.colab package can exist outside their own platforms."""
@@ -700,6 +811,7 @@ def detect_platform():
         return "colab"
     try:
         import google.colab  # noqa: F401
+
         return "colab"
     except ImportError:
         pass
@@ -723,9 +835,11 @@ def locate_on_drive(preferred, root="/content/drive/MyDrive", max_depth=4):
 def setup_environment(drive_data_dir, drive_run_root):
     """Return (platform, data_dir, run_root). On Colab, copy the data from Drive to fast local disk."""
     import shutil
+
     platform = detect_platform()
     if platform == "colab":
         from google.colab import drive
+
         drive.mount("/content/drive")
         drive_data_dir = locate_on_drive(drive_data_dir)
         local = "/content/casmi_data"
@@ -733,7 +847,9 @@ def setup_environment(drive_data_dir, drive_run_root):
         for name in ["train.parquet", "test.parquet", "sample_submission.csv"]:
             source, target = os.path.join(drive_data_dir, name), os.path.join(local, name)
             if not os.path.exists(source):
-                raise FileNotFoundError(f"{source} is missing. Upload the dataset folder to Drive or fix DRIVE_DATA_DIR.")
+                raise FileNotFoundError(
+                    f"{source} is missing. Upload the dataset folder to Drive or fix DRIVE_DATA_DIR."
+                )
             if not os.path.exists(target) or os.path.getsize(target) != os.path.getsize(source):
                 print("Copying", name, "from Drive")
                 shutil.copy(source, target)
@@ -750,6 +866,7 @@ class Run:
         import json
         import logging
         import platform as py_platform
+
         self.name = name
         self.root = root
         self.quick = bool(config.get("quick_run"))
@@ -766,7 +883,12 @@ class Run:
             self.logger.addHandler(handler)
         with open(os.path.join(self.dir, "config.json"), "w") as handle:
             json.dump(config, handle, indent=2, default=str)
-        info = {"platform": detect_platform(), "python": py_platform.python_version(), "numpy": np.__version__, "pandas": pd.__version__}
+        info = {
+            "platform": detect_platform(),
+            "python": py_platform.python_version(),
+            "numpy": np.__version__,
+            "pandas": pd.__version__,
+        }
         for module in ["torch", "rdkit", "torch_xla"]:
             try:
                 info[module] = __import__(module).__version__
@@ -774,6 +896,7 @@ class Run:
                 info[module] = None
         if info["torch"]:
             import torch
+
             info["gpu"] = torch.cuda.get_device_name(0) if torch.cuda.is_available() else None
         with open(os.path.join(self.dir, "environment.json"), "w") as handle:
             json.dump(info, handle, indent=2)
@@ -790,6 +913,7 @@ class Run:
 
     def figure(self, fig, name):
         import matplotlib.pyplot as plt
+
         path = os.path.join(self.fig_dir, f"{name}.png")
         fig.savefig(path, dpi=170, bbox_inches="tight", facecolor=fig.get_facecolor())
         plt.show()
@@ -799,7 +923,10 @@ class Run:
     def finish(self, entry):
         """Write summary.json and add this run to the shared experiment log."""
         import json
-        entry = dict(entry, run_folder=os.path.basename(self.dir), runtime_minutes=round((time.time() - self.start) / 60, 2))
+
+        entry = dict(
+            entry, run_folder=os.path.basename(self.dir), runtime_minutes=round((time.time() - self.start) / 60, 2)
+        )
         with open(os.path.join(self.dir, "summary.json"), "w") as handle:
             json.dump(entry, handle, indent=2, default=str)
         path = os.path.join(self.root, "experiment_log_quick.csv" if self.quick else "experiment_log.csv")
@@ -814,11 +941,16 @@ class Run:
 
 INK, MUTED, GRID, SURFACE = "#0b0b0b", "#52514e", "#e6e5e0", "#fcfcfb"
 GROUP_COLORS = {"class 1": "#2a78d6", "class 2": "#eb6834", "np proxy": "#1baf7a"}
-GROUP_LABELS = {"class 1": "Class 1 (has reference spectra)", "class 2": "Class 2 (no reference spectra)", "np proxy": "Natural-product proxy"}
+GROUP_LABELS = {
+    "class 1": "Class 1 (has reference spectra)",
+    "class 2": "Class 2 (no reference spectra)",
+    "np proxy": "Natural-product proxy",
+}
 
 
 def _axes(ncols=1, size=(8.5, 4.6)):
     import matplotlib.pyplot as plt
+
     fig, axes = plt.subplots(1, ncols, figsize=size, facecolor=SURFACE, squeeze=False)
     for ax in axes[0]:
         ax.set_facecolor(SURFACE)
@@ -848,9 +980,13 @@ def plot_group_bars(frame, title, x_label=""):
     positions = np.arange(len(frame))
     for g, group in enumerate(GROUP_COLORS):
         values = frame[group].astype(float).to_numpy()
-        bars = ax.bar(positions + (g - 1) * width, values, width * 0.92, color=GROUP_COLORS[group], label=GROUP_LABELS[group])
-        for bar, value in zip(bars, values):
-            ax.text(bar.get_x() + bar.get_width() / 2, value + 0.012, f"{value:.2f}", ha="center", color=MUTED, fontsize=7.5)
+        bars = ax.bar(
+            positions + (g - 1) * width, values, width * 0.92, color=GROUP_COLORS[group], label=GROUP_LABELS[group]
+        )
+        for bar, value in zip(bars, values, strict=False):
+            ax.text(
+                bar.get_x() + bar.get_width() / 2, value + 0.012, f"{value:.2f}", ha="center", color=MUTED, fontsize=7.5
+            )
     ax.set_xticks(positions, frame.index, color=MUTED, fontsize=9)
     ax.set_ylim(0, 1.08)
     _labels(ax, x_label, "Validation MRR@25")
@@ -913,11 +1049,20 @@ def plot_training(history, title):
     _labels(left, "Epoch", "Training BCE")
     _title(left, "Training loss")
     for column, group in [("class1", "class 1"), ("class2", "class 2"), ("np_proxy", "np proxy")]:
-        right.plot(history.epoch, history[column].astype(float), color=GROUP_COLORS[group], linewidth=2, marker="o", markersize=5, label=GROUP_LABELS[group])
+        right.plot(
+            history.epoch,
+            history[column].astype(float),
+            color=GROUP_COLORS[group],
+            linewidth=2,
+            marker="o",
+            markersize=5,
+            label=GROUP_LABELS[group],
+        )
     _labels(right, "Epoch", "Validation MRR@25")
     _title(right, "Validation by class")
     right.legend(frameon=False, labelcolor=MUTED, loc="upper center", bbox_to_anchor=(0.5, -0.18), ncols=1)
     from matplotlib.ticker import MaxNLocator
+
     for ax in (left, right):
         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     fig.suptitle(title, x=0.06, ha="left", color=INK, fontsize=13)
@@ -928,5 +1073,7 @@ def plot_training(history, title):
 def plot_comparison(log, title="Model comparison on validation"):
     """Latest run of each version from the experiment log."""
     latest = log.drop_duplicates("version", keep="last").set_index("version")
-    frame = latest.rename(columns={"class1": "class 1", "class2": "class 2", "np_proxy": "np proxy"})[list(GROUP_COLORS)]
+    frame = latest.rename(columns={"class1": "class 1", "class2": "class 2", "np_proxy": "np proxy"})[
+        list(GROUP_COLORS)
+    ]
     return plot_group_bars(frame, title)
