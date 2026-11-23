@@ -1,0 +1,12 @@
+{
+  "date": "2026-11-11",
+  "version": "B2",
+  "change": "modified cosine, mean pooling, 10 ppm",
+  "val_MRR@25": 0.4837,
+  "class1": 0.8628,
+  "class2": 0.1046,
+  "np_proxy": 0.5585,
+  "LB": "",
+  "run_folder": "baseline_library_search_20261111_070818",
+  "runtime_minutes": 14.39
+}

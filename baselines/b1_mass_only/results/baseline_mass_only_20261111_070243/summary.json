@@ -1,0 +1,12 @@
+{
+  "date": "2026-11-11",
+  "version": "B1",
+  "change": "mass only, 5 ppm, prior_then_ppm",
+  "val_MRR@25": 0.2642,
+  "class1": 0.4282,
+  "class2": 0.1002,
+  "np_proxy": 0.5108,
+  "LB": "",
+  "run_folder": "baseline_mass_only_20261111_070243",
+  "runtime_minutes": 1.37
+}

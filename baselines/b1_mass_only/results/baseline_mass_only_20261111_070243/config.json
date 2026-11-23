@@ -1,0 +1,13 @@
+{
+  "ppm_windows": [
+    5,
+    10,
+    20
+  ],
+  "orders": [
+    "ppm_then_prior",
+    "prior_then_ppm"
+  ],
+  "val_molecules": 3000,
+  "quick_run": false
+}
