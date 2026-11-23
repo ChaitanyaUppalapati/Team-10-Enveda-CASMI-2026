@@ -1,0 +1,29 @@
+2026-11-11 07:08:23 | Run folder: /content/drive/MyDrive/CASMI/experiment_runs/baseline_library_search_20261111_070818
+2026-11-11 07:08:23 | Environment: {'platform': 'colab', 'python': '3.13.18', 'numpy': '2.4.6', 'pandas': '2.2.3', 'torch': '2.14.1+cpu', 'rdkit': None, 'torch_xla': None, 'gpu': None}
+2026-11-11 07:08:23 | Config: {'ppm': 10, 'val_molecules': 3000, 'quick_run': False}
+2026-11-11 07:10:15 | Spectra 2539608, library 2279207, pool 275810, validation molecules 2912
+2026-11-11 07:10:15 | Validation classes: {2: 1499, 1: 1413}
+2026-11-11 07:12:23 | Library spectra near query masses: 764445; queries empty after cleaning: 14
+2026-11-11 07:21:22 | ablation:
+   modified pooling  class 1  class 2  np proxy  balanced
+0     False     max   0.8771   0.1052    0.5552    0.4912
+1     False    mean   0.8630   0.1052    0.5572    0.4841
+2     False     rrf   0.8285   0.1052    0.5532    0.4668
+3      True     max   0.8765   0.1046    0.5545    0.4906
+4      True    mean   0.8628   0.1046    0.5585    0.4837
+5      True     rrf   0.8261   0.1046    0.5493    0.4654
+2026-11-11 07:21:22 | Best setting: (True, 'mean'). Kaggle settings: (True, 'mean')
+2026-11-11 07:21:22 | metrics:
+               n  MRR@25    top1    top5   top25  MRR_ci_low  MRR_ci_high
+class 1   1413.0  0.8628  0.8054  0.9384  0.9816      0.8474       0.8774
+class 2   1499.0  0.1046  0.0454  0.1501  0.4103      0.0940       0.1149
+np proxy   250.0  0.5585  0.4760  0.6440  0.8920      0.5019       0.6127
+balanced  2912.0  0.4837  0.4254  0.5442  0.6960      0.4707       0.4962
+2026-11-11 07:21:22 | per_molecule_ranks: 2912 rows saved to per_molecule_ranks.csv
+2026-11-11 07:21:23 | Saved figure /content/drive/MyDrive/CASMI/experiment_runs/baseline_library_search_20261111_070818/figures/ablation.png
+2026-11-11 07:21:24 | Saved figure /content/drive/MyDrive/CASMI/experiment_runs/baseline_library_search_20261111_070818/figures/hit_curve.png
+2026-11-11 07:21:24 | Saved figure /content/drive/MyDrive/CASMI/experiment_runs/baseline_library_search_20261111_070818/figures/rank_histogram.png
+2026-11-11 07:21:25 | Saved figure /content/drive/MyDrive/CASMI/experiment_runs/baseline_library_search_20261111_070818/figures/peaks_after_cleaning.png
+2026-11-11 07:22:42 | Experiment log updated: /content/drive/MyDrive/CASMI/experiment_runs/experiment_log.csv
+2026-11-11 07:22:42 | Summary: {'date': '2026-11-11', 'version': 'B2', 'change': 'modified cosine, mean pooling, 10 ppm', 'val_MRR@25': 0.4837, 'class1': 0.8628, 'class2': 0.1046, 'np_proxy': 0.5585, 'LB': '', 'run_folder': 'baseline_library_search_20261111_070818', 'runtime_minutes': 14.39}
+2026-11-11 07:22:42 | Saved figure /content/drive/MyDrive/CASMI/experiment_runs/baseline_library_search_20261111_070818/figures/comparison.png
