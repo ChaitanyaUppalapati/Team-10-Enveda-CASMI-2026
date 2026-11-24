@@ -1,0 +1,13 @@
+# Member 3 Colab run. Validation is Member 3's own split (casmi-split-v1), not the frozen split.
+date: 2026-11-11
+member: 3
+model_id: baselines.b1_mass_only
+version: v1
+change: "mass only, 5 ppm, prior_then_ppm"
+val_mrr: 0.2642
+lb_score: 0.103
+submitted: true
+notes: >-
+  Own structure-level split (casmi-split-v1), 2912 validation molecules.
+  Per-class MRR@25: class 1 0.4282, class 2 0.1002, np proxy 0.5108.
+  Runtime 1.37 min on Colab. Run folder baseline_mass_only_20261111_070243.

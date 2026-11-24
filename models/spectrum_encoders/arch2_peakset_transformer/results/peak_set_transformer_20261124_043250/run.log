@@ -1,0 +1,49 @@
+2026-11-24 04:32:51 | Run folder: /content/drive/MyDrive/CASMI/experiment_runs/peak_set_transformer_20261124_043250
+2026-11-24 04:32:51 | Environment: {'platform': 'colab', 'python': '3.13.16', 'numpy': '2.4.6', 'pandas': '2.2.3', 'torch': '2.14.1+cu130', 'rdkit': '2026.03.3', 'torch_xla': None, 'gpu': 'Tesla T4'}
+2026-11-24 04:32:51 | Config: {'model': 'peak_set_transformer', 'kwargs': {'d_model': 256, 'layers': 4, 'heads': 8, 'dropout': 0.1}, 'max_peaks': 128, 'epochs': 10, 'batch': 256, 'lr': 0.0003, 'per_structure': 8, 'max_minutes': 150, 'ppm': 10, 'device': 'cuda', 'seed': 42, 'quick_run': False}
+2026-11-24 04:34:15 | Spectra 2539608, library 2279207, pool 275810, validation molecules 2912
+2026-11-24 04:34:15 | Validation classes: {2: 1499, 1: 1413}
+2026-11-24 04:34:15 | Computing Morgan fingerprints for the pool
+2026-11-24 04:35:33 | Training spectra: 1369050 from 247666 structures
+2026-11-24 04:37:32 | Parameters: 3,871,744
+2026-11-24 04:49:27 | {'epoch': 1, 'minutes': 11.82, 'train_bce': 0.10742809608849004, 'val_MRR@25': 0.3858, 'class1': 0.4431, 'class2': 0.3285, 'np_proxy': 0.4191}
+2026-11-24 05:01:26 | {'epoch': 2, 'minutes': 23.82, 'train_bce': 0.06807395830898168, 'val_MRR@25': 0.5242, 'class1': 0.5497, 'class2': 0.4987, 'np_proxy': 0.5046}
+2026-11-24 05:13:27 | {'epoch': 3, 'minutes': 35.83, 'train_bce': 0.06473645848248726, 'val_MRR@25': 0.5871, 'class1': 0.6016, 'class2': 0.5725, 'np_proxy': 0.5434}
+2026-11-24 05:25:27 | {'epoch': 4, 'minutes': 47.83, 'train_bce': 0.06276682762201644, 'val_MRR@25': 0.6163, 'class1': 0.6288, 'class2': 0.6039, 'np_proxy': 0.5717}
+2026-11-24 05:37:28 | {'epoch': 5, 'minutes': 59.84, 'train_bce': 0.06140801633253752, 'val_MRR@25': 0.638, 'class1': 0.6397, 'class2': 0.6362, 'np_proxy': 0.5763}
+2026-11-24 05:49:27 | {'epoch': 6, 'minutes': 71.84, 'train_bce': 0.060374704949182956, 'val_MRR@25': 0.6549, 'class1': 0.6585, 'class2': 0.6514, 'np_proxy': 0.5987}
+2026-11-24 06:01:29 | {'epoch': 7, 'minutes': 83.87, 'train_bce': 0.059577794928449945, 'val_MRR@25': 0.6659, 'class1': 0.6694, 'class2': 0.6623, 'np_proxy': 0.6183}
+2026-11-24 06:13:31 | {'epoch': 8, 'minutes': 95.89, 'train_bce': 0.05898455992042851, 'val_MRR@25': 0.6752, 'class1': 0.6782, 'class2': 0.6722, 'np_proxy': 0.6396}
+2026-11-24 06:25:30 | {'epoch': 9, 'minutes': 107.88, 'train_bce': 0.058595793256586634, 'val_MRR@25': 0.6797, 'class1': 0.6823, 'class2': 0.677, 'np_proxy': 0.6367}
+2026-11-24 06:37:31 | {'epoch': 10, 'minutes': 119.89, 'train_bce': 0.05840732851986219, 'val_MRR@25': 0.6805, 'class1': 0.6837, 'class2': 0.6773, 'np_proxy': 0.6355}
+2026-11-24 06:37:31 | training_history:
+   epoch  minutes  train_bce  val_MRR@25  class1  class2  np_proxy
+0      1    11.82   0.107428      0.3858  0.4431  0.3285    0.4191
+1      2    23.82   0.068074      0.5242  0.5497  0.4987    0.5046
+2      3    35.83   0.064736      0.5871  0.6016  0.5725    0.5434
+3      4    47.83   0.062767      0.6163  0.6288  0.6039    0.5717
+4      5    59.84   0.061408      0.6380  0.6397  0.6362    0.5763
+5      6    71.84   0.060375      0.6549  0.6585  0.6514    0.5987
+6      7    83.87   0.059578      0.6659  0.6694  0.6623    0.6183
+7      8    95.89   0.058985      0.6752  0.6782  0.6722    0.6396
+8      9   107.88   0.058596      0.6797  0.6823  0.6770    0.6367
+9     10   119.89   0.058407      0.6805  0.6837  0.6773    0.6355
+2026-11-24 06:37:36 | metrics:
+               n  MRR@25    top1    top5   top25  MRR_ci_low  MRR_ci_high
+class 1   1413.0  0.6837  0.5584  0.8514  0.9590      0.6641       0.7035
+class 2   1499.0  0.6773  0.5490  0.8406  0.9586      0.6584       0.6952
+np proxy   250.0  0.6355  0.4880  0.8560  0.9760      0.5896       0.6803
+balanced  2912.0  0.6805  0.5537  0.8460  0.9588      0.6612       0.6994
+2026-11-24 06:37:36 | per_molecule_ranks: 2912 rows saved to per_molecule_ranks.csv
+2026-11-24 06:37:37 | fingerprint_quality:
+     tanimoto  bit_f1
+cls                  
+1      0.3521  0.4978
+2      0.3667  0.5207
+2026-11-24 06:37:37 | Saved figure /content/drive/MyDrive/CASMI/experiment_runs/peak_set_transformer_20261124_043250/figures/training_curves.png
+2026-11-24 06:37:38 | Saved figure /content/drive/MyDrive/CASMI/experiment_runs/peak_set_transformer_20261124_043250/figures/hit_curve.png
+2026-11-24 06:37:39 | Saved figure /content/drive/MyDrive/CASMI/experiment_runs/peak_set_transformer_20261124_043250/figures/rank_histogram.png
+2026-11-24 06:37:41 | Experiment log updated: /content/drive/MyDrive/CASMI/experiment_runs/experiment_log.csv
+2026-11-24 06:37:41 | Summary: {'date': '2026-11-24', 'version': 'Peak-set transformer', 'change': 'Peak-set transformer fingerprint predictor', 'val_MRR@25': 0.6805, 'class1': 0.6837, 'class2': 0.6773, 'np_proxy': 0.6355, 'LB': '', 'run_folder': 'peak_set_transformer_20261124_043250', 'runtime_minutes': 124.84}
+2026-11-24 06:37:41 | Saved figure /content/drive/MyDrive/CASMI/experiment_runs/peak_set_transformer_20261124_043250/figures/comparison.png
+2026-11-24 06:37:43 | CandidateScores: val (72800, 3), test (10000, 3)

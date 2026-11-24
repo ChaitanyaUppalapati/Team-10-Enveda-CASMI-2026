@@ -1,0 +1,12 @@
+{
+  "date": "2026-11-23",
+  "version": "Residual MLP",
+  "change": "Residual MLP fingerprint predictor",
+  "val_MRR@25": 0.7141,
+  "class1": 0.7148,
+  "class2": 0.7133,
+  "np_proxy": 0.6824,
+  "LB": "",
+  "run_folder": "residual_mlp_20261123_053259",
+  "runtime_minutes": 12.66
+}

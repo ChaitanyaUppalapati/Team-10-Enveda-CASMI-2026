@@ -1,0 +1,15 @@
+# Member 3 Colab run. Validation is Member 3's own split (casmi-split-v1), not the frozen split.
+date: 2026-11-24
+member: 3
+model_id: spectrum_encoders.arch2_peakset_transformer
+version: v1
+change: "Peak-set transformer fingerprint predictor"
+val_mrr: 0.6805
+lb_score: 0.121
+submitted: true
+notes: >-
+  Own structure-level split (casmi-split-v1), 2912 validation molecules.
+  Per-class MRR@25: class 1 0.6837, class 2 0.6773,
+  np proxy 0.6355. Runtime 124.84 min on Tesla T4.
+  Run folder peak_set_transformer_20261124_043250.
+  LB below B2 (0.146) despite much higher val class 2 MRR: the LB is capped by candidate-pool coverage.

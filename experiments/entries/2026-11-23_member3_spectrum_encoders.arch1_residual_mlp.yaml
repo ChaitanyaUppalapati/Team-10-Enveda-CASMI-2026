@@ -1,0 +1,15 @@
+# Member 3 Colab run. Validation is Member 3's own split (casmi-split-v1), not the frozen split.
+date: 2026-11-23
+member: 3
+model_id: spectrum_encoders.arch1_residual_mlp
+version: v1
+change: "Residual MLP fingerprint predictor"
+val_mrr: 0.7141
+lb_score: 0.138
+submitted: true
+notes: >-
+  Own structure-level split (casmi-split-v1), 2912 validation molecules.
+  Per-class MRR@25: class 1 0.7148, class 2 0.7133,
+  np proxy 0.6824. Runtime 12.66 min on NVIDIA L4.
+  Run folder residual_mlp_20261123_053259.
+  LB below B2 (0.146) despite much higher val class 2 MRR: the LB is capped by candidate-pool coverage.

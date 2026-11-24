@@ -1,0 +1,13 @@
+# Member 3 Colab run. Validation is Member 3's own split (casmi-split-v1), not the frozen split.
+date: 2026-11-11
+member: 3
+model_id: baselines.b2_library_search
+version: v1
+change: "modified cosine, mean pooling, 10 ppm"
+val_mrr: 0.4837
+lb_score: 0.146
+submitted: true
+notes: >-
+  Own structure-level split (casmi-split-v1), 2912 validation molecules.
+  Per-class MRR@25: class 1 0.8628, class 2 0.1046, np proxy 0.5585.
+  Runtime 14.39 min on Colab CPU. Run folder baseline_library_search_20261111_070818.

@@ -1,0 +1,10 @@
+{
+  "platform": "colab",
+  "python": "3.13.16",
+  "numpy": "2.4.6",
+  "pandas": "2.2.3",
+  "torch": "2.14.1+cu130",
+  "rdkit": "2026.03.3",
+  "torch_xla": null,
+  "gpu": "Tesla T4"
+}
