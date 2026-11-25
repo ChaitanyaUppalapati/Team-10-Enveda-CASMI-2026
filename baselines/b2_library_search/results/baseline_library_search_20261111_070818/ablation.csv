@@ -1,0 +1,7 @@
+modified,pooling,class 1,class 2,np proxy,balanced
+False,max,0.8771,0.1052,0.5552,0.4912
+False,mean,0.863,0.1052,0.5572,0.4841
+False,rrf,0.8285,0.1052,0.5532,0.4668
+True,max,0.8765,0.1046,0.5545,0.4906
+True,mean,0.8628,0.1046,0.5585,0.4837
+True,rrf,0.8261,0.1046,0.5493,0.4654

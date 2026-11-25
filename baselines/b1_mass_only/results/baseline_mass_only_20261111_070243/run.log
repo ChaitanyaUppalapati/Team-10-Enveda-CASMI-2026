@@ -1,0 +1,29 @@
+2026-11-11 07:02:50 | Run folder: /content/drive/MyDrive/CASMI/experiment_runs/baseline_mass_only_20261111_070243
+2026-11-11 07:02:50 | Environment: {'platform': 'colab', 'python': '3.13.16', 'numpy': '2.4.6', 'pandas': '2.2.3', 'torch': '2.14.1+cu130', 'rdkit': None, 'torch_xla': None, 'gpu': 'Tesla T4'}
+2026-11-11 07:02:50 | Config: {'ppm_windows': [5, 10, 20], 'orders': ['ppm_then_prior', 'prior_then_ppm'], 'val_molecules': 3000, 'quick_run': False}
+2026-11-11 07:04:01 | Spectra 2539608, library 2279207, pool 275810, validation molecules 2912
+2026-11-11 07:04:01 | Validation classes: {2: 1499, 1: 1413}
+2026-11-11 07:04:02 | ablation:
+   ppm           order  class 1  class 2  np proxy  balanced
+0    5  ppm_then_prior   0.4850   0.1521    0.4695    0.3186
+1    5  prior_then_ppm   0.4282   0.1002    0.5108    0.2642
+2   10  ppm_then_prior   0.4873   0.1520    0.4777    0.3196
+3   10  prior_then_ppm   0.3844   0.0721    0.5065    0.2282
+4   20  ppm_then_prior   0.4875   0.1520    0.4777    0.3198
+5   20  prior_then_ppm   0.3381   0.0538    0.4837    0.1960
+2026-11-11 07:04:02 | Best setting: (5, 'prior_then_ppm'). Kaggle settings: (5, 'prior_then_ppm')
+2026-11-11 07:04:02 | metrics:
+               n  MRR@25    top1    top5  top25  MRR_ci_low  MRR_ci_high
+class 1   1413.0  0.4282  0.2916  0.5994  0.845      0.4073       0.4492
+class 2   1499.0  0.1002  0.0360  0.1494  0.451      0.0901       0.1097
+np proxy   250.0  0.5108  0.4000  0.6280  0.884      0.4632       0.5634
+balanced  2912.0  0.2642  0.1638  0.3744  0.648      0.2487       0.2794
+2026-11-11 07:04:03 | per_molecule_ranks: 2912 rows saved to per_molecule_ranks.csv
+2026-11-11 07:04:03 | Saved figure /content/drive/MyDrive/CASMI/experiment_runs/baseline_mass_only_20261111_070243/figures/ablation.png
+2026-11-11 07:04:03 | Saved figure /content/drive/MyDrive/CASMI/experiment_runs/baseline_mass_only_20261111_070243/figures/hit_curve.png
+2026-11-11 07:04:04 | Saved figure /content/drive/MyDrive/CASMI/experiment_runs/baseline_mass_only_20261111_070243/figures/rank_histogram.png
+2026-11-11 07:04:04 | Saved figure /content/drive/MyDrive/CASMI/experiment_runs/baseline_mass_only_20261111_070243/figures/mass_error.png
+2026-11-11 07:04:04 | Saved figure /content/drive/MyDrive/CASMI/experiment_runs/baseline_mass_only_20261111_070243/figures/candidate_counts.png
+2026-11-11 07:04:05 | Experiment log updated: /content/drive/MyDrive/CASMI/experiment_runs/experiment_log.csv
+2026-11-11 07:04:05 | Summary: {'date': '2026-11-11', 'version': 'B1', 'change': 'mass only, 5 ppm, prior_then_ppm', 'val_MRR@25': 0.2642, 'class1': 0.4282, 'class2': 0.1002, 'np_proxy': 0.5108, 'LB': '', 'run_folder': 'baseline_mass_only_20261111_070243', 'runtime_minutes': 1.37}
+2026-11-11 07:04:06 | Saved figure /content/drive/MyDrive/CASMI/experiment_runs/baseline_mass_only_20261111_070243/figures/comparison.png

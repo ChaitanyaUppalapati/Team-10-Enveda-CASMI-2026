@@ -1,0 +1,3 @@
+date,version,change,val_MRR@25,class1,class2,np_proxy,LB,run_folder,runtime_minutes
+2026-11-11,B1,"mass only, 5 ppm, prior_then_ppm",0.2642,0.4282,0.1002,0.5108,,baseline_mass_only_20261111_070243,1.37
+2026-11-11,B2,"modified cosine, mean pooling, 10 ppm",0.4837,0.8628,0.1046,0.5585,,baseline_library_search_20261111_070818,14.39
