@@ -86,3 +86,61 @@ def test_scoring_and_mrr():
     assert ranks.tolist() == [1.0, 2.0]
     assert mrr_at_k(ranks) == pytest.approx(0.75)
     assert mrr_at_k(pd.Series([np.nan, 30.0])) == 0.0
+
+
+def test_tuned_mean_control_trains_a_copy_of_a_frozen_head():
+    from common.full import TunedMean
+
+    head = torch.nn.Linear(EMB, FP)
+    for p in head.parameters():
+        p.requires_grad_(False)
+    control = TunedMean(head)
+    (h, mask), _, _ = batch([1, 3])
+    logits, _ = control(h, mask)
+    logits.sum().backward()
+    assert control.head.weight.grad is not None and head.weight.grad is None
+    probs = torch.sigmoid(head(h))
+    expected = (probs[1, :3]).mean(0)
+    assert torch.allclose(torch.sigmoid(logits[1]), expected, atol=1e-4)
+
+
+def test_paired_bootstrap_detects_a_clear_difference():
+    from common.full import paired_bootstrap
+
+    rng = np.random.default_rng(0)
+    b = rng.random(500)
+    out = paired_bootstrap(b + 0.1, b)
+    assert out["delta"] == pytest.approx(0.1) and out["ci_low"] > 0
+    same = paired_bootstrap(b, b)
+    assert same["delta"] == 0 and same["ci_low"] <= 0 <= same["ci_high"]
+
+
+def test_attention_head_starts_as_tuned_mean_and_fusion_orders_by_rank():
+    from common.full import AttentionHead, TunedMean, rrf_fuse
+
+    head = torch.nn.Linear(EMB, FP)
+    (h, mask), _, _ = batch([2, 4])
+    att, _ = AttentionHead(head, EMB)(h, mask)
+    avg, _ = TunedMean(head)(h, mask)
+    assert torch.allclose(att, avg, atol=1e-4)
+    assert rrf_fuse([[1, 2, 3], [1, 3, 2]]) [:1] == [1]
+
+
+# ---- v2: external candidates and gated B2 ----
+from common.candidates import gate, smiles_column  # noqa: E402
+
+
+def test_smiles_column_prefers_canonical_and_falls_back():
+    assert smiles_column(["id", "SMILES", "canonical_smiles"]) == "canonical_smiles"
+    assert smiles_column(["Identifier", "SMILES", "InChIKey"]) == "SMILES"
+    assert smiles_column(["x", "my_smiles_str"]) == "my_smiles_str"
+    with pytest.raises(ValueError):
+        smiles_column(["a", "b"])
+
+
+def test_gate_switches_only_above_tau():
+    model = {"a": [1, 2], "b": [3, 4]}
+    alt = {"a": [9, 8], "b": [7, 6]}
+    out = gate(model, alt, {"a": 0.9, "b": 0.1}, tau=0.5)
+    assert out == {"a": [9, 8], "b": [3, 4]}
+    assert gate(model, alt, {"a": 0.9}, tau=float("inf")) == model
