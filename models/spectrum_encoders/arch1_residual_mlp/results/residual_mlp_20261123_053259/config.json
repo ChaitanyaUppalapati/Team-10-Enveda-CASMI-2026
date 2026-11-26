@@ -1,0 +1,19 @@
+{
+  "model": "residual_mlp",
+  "kwargs": {
+    "n_bins": 1200,
+    "width": 2048,
+    "depth": 4,
+    "dropout": 0.2
+  },
+  "max_peaks": 128,
+  "epochs": 15,
+  "batch": 1024,
+  "lr": 0.0005,
+  "per_structure": 8,
+  "max_minutes": 150,
+  "ppm": 10,
+  "device": "cuda",
+  "seed": 42,
+  "quick_run": false
+}

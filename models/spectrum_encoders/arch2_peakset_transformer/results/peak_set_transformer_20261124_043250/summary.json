@@ -1,0 +1,12 @@
+{
+  "date": "2026-11-24",
+  "version": "Peak-set transformer",
+  "change": "Peak-set transformer fingerprint predictor",
+  "val_MRR@25": 0.6805,
+  "class1": 0.6837,
+  "class2": 0.6773,
+  "np_proxy": 0.6355,
+  "LB": "",
+  "run_folder": "peak_set_transformer_20261124_043250",
+  "runtime_minutes": 124.84
+}
