@@ -1,0 +1,295 @@
+{
+  "date": "2026-11-26 03:46",
+  "runtime_min": 17.7,
+  "gpu": "Tesla T4",
+  "quick": false,
+  "chosen": "gated_z",
+  "chosen_params": {
+    "kind": "gated",
+    "weights": {
+      "library": 0.1619,
+      "fp_ll": 0.39,
+      "fp_tani": 0.4481
+    },
+    "edges": [
+      0.4547203580538432,
+      0.724233587582906
+    ],
+    "bin_weights": [
+      [
+        0.4777397171993683,
+        0.1535779146279681,
+        0.36868236817266364
+      ],
+      [
+        0.04704512165139964,
+        0.3581975162017397,
+        0.5947573621468606
+      ],
+      [
+        0.1327716315814566,
+        0.23915758897881595,
+        0.6280707794397273
+      ],
+      [
+        0.270398648994883,
+        0.15134694565643803,
+        0.578254405348679
+      ]
+    ],
+    "bin_sizes": [
+      68,
+      948,
+      948,
+      948
+    ],
+    "method": "z"
+  },
+  "all_params": {
+    "library": {
+      "kind": "single",
+      "source": "library"
+    },
+    "fp_ll": {
+      "kind": "single",
+      "source": "fp_ll"
+    },
+    "fp_tani": {
+      "kind": "single",
+      "source": "fp_tani"
+    },
+    "global_z": {
+      "kind": "global",
+      "weights": {
+        "library": 0.1619,
+        "fp_ll": 0.39,
+        "fp_tani": 0.4481
+      },
+      "method": "z"
+    },
+    "gated_z": {
+      "kind": "gated",
+      "weights": {
+        "library": 0.1619,
+        "fp_ll": 0.39,
+        "fp_tani": 0.4481
+      },
+      "edges": [
+        0.4547203580538432,
+        0.724233587582906
+      ],
+      "bin_weights": [
+        [
+          0.4777397171993683,
+          0.1535779146279681,
+          0.36868236817266364
+        ],
+        [
+          0.04704512165139964,
+          0.3581975162017397,
+          0.5947573621468606
+        ],
+        [
+          0.1327716315814566,
+          0.23915758897881595,
+          0.6280707794397273
+        ],
+        [
+          0.270398648994883,
+          0.15134694565643803,
+          0.578254405348679
+        ]
+      ],
+      "bin_sizes": [
+        68,
+        948,
+        948,
+        948
+      ],
+      "method": "z"
+    },
+    "global_rrf": {
+      "kind": "global",
+      "weights": {
+        "library": 0.0095,
+        "fp_ll": 0.0803,
+        "fp_tani": 0.9101
+      },
+      "method": "rrf"
+    },
+    "gated_rrf": {
+      "kind": "gated",
+      "weights": {
+        "library": 0.0095,
+        "fp_ll": 0.0803,
+        "fp_tani": 0.9101
+      },
+      "edges": [
+        0.4547203580538432,
+        0.724233587582906
+      ],
+      "bin_weights": [
+        [
+          0.3333333333333333,
+          0.3333333333333333,
+          0.3333333333333333
+        ],
+        [
+          0.025702769501779448,
+          0.40315827420125744,
+          0.5711389562969631
+        ],
+        [
+          0.009542838457470842,
+          0.08033749452734293,
+          0.9101196670151863
+        ],
+        [
+          1.0,
+          0.0,
+          0.0
+        ]
+      ],
+      "bin_sizes": [
+        68,
+        948,
+        948,
+        948
+      ],
+      "method": "rrf"
+    }
+  },
+  "split": {
+    "function": "casmi_pipeline.make_split",
+    "salt": "casmi-split-v1",
+    "max_query_spectra": 16,
+    "molecules": 2912,
+    "class1": 1413,
+    "class2": 1499,
+    "np_proxy": 250,
+    "spectra": 14242
+  },
+  "pool": {
+    "size": 1097770,
+    "training_structures": 275810,
+    "external": 821960,
+    "extra_files": {
+      "coconut": [
+        "coconut_csv_lite-11-2026.csv"
+      ],
+      "pubchem": [
+        "PubChemLite_exposomics_20260925.csv"
+      ]
+    }
+  },
+  "coverage": {
+    "val": {
+      "molecules": 2912,
+      "candidates_median": 96.0,
+      "candidates_max": 694,
+      "no_candidates": 2,
+      "with_library_evidence": 0.9766,
+      "truth_in_window": 0.9914,
+      "truth_in_window_class1": 0.9858,
+      "truth_in_window_class2": 0.9967
+    },
+    "test": {
+      "molecules": 400,
+      "candidates_median": 133.0,
+      "candidates_max": 646,
+      "no_candidates": 0,
+      "with_library_evidence": 1.0
+    },
+    "test_b1_fallback": 0
+  },
+  "validation": {
+    "gated_z": {
+      "balanced": 0.6871,
+      "class 1": 0.8165,
+      "class 2": 0.5577,
+      "np proxy": 0.5787
+    },
+    "global_z": {
+      "balanced": 0.6758,
+      "class 1": 0.7945,
+      "class 2": 0.5571,
+      "np proxy": 0.5532
+    },
+    "gated_rrf": {
+      "balanced": 0.6464,
+      "class 1": 0.7216,
+      "class 2": 0.5711,
+      "np proxy": 0.5198
+    },
+    "global_rrf": {
+      "balanced": 0.6128,
+      "class 1": 0.5782,
+      "class 2": 0.6475,
+      "np proxy": 0.4624
+    },
+    "fp_tani": {
+      "balanced": 0.6092,
+      "class 1": 0.5708,
+      "class 2": 0.6476,
+      "np proxy": 0.4594
+    },
+    "fp_ll": {
+      "balanced": 0.5356,
+      "class 1": 0.49,
+      "class 2": 0.5812,
+      "np proxy": 0.4409
+    },
+    "library": {
+      "balanced": 0.4428,
+      "class 1": 0.8592,
+      "class 2": 0.0264,
+      "np proxy": 0.4729
+    },
+    "B1 (mass only)": {
+      "balanced": 0.2654,
+      "class 1": 0.4439,
+      "class 2": 0.0869,
+      "np proxy": 0.3586
+    }
+  },
+  "fp_history": [
+    {
+      "epoch": 18,
+      "minutes": 5.57,
+      "train_bce": 0.05591,
+      "val_bce": 0.06079
+    },
+    {
+      "epoch": 19,
+      "minutes": 5.88,
+      "train_bce": 0.0558,
+      "val_bce": 0.06078
+    },
+    {
+      "epoch": 20,
+      "minutes": 6.19,
+      "train_bce": 0.05575,
+      "val_bce": 0.06079
+    }
+  ],
+  "config": {
+    "ppm": 10.0,
+    "n_val": 3000,
+    "per_structure": 8,
+    "max_train": 1200000,
+    "train_spectra": 1200000,
+    "fp_epochs": 20,
+    "fusion": {
+      "ppm": 10.0,
+      "n_bins": 1500,
+      "bin_width": 1.0,
+      "chunk_rows": 20000,
+      "max_candidates": 5000,
+      "n_random": 300,
+      "n_conf_bins": 3,
+      "min_bin": 40,
+      "rrf_k": 60.0,
+      "seed": 2026
+    }
+  }
+}
