@@ -20,20 +20,25 @@ written by `casmi.interfaces.write_scores`.
 - Run outputs: `results/baseline_mass_only_20261111_070243/` (metrics, per-molecule ranks, figures, log, submission).
 
 ## How to run
-```bash
-python baselines/b1_mass_only/train.py --config baselines/b1_mass_only/config.yaml
-python baselines/b1_mass_only/predict.py --config baselines/b1_mass_only/config.yaml --split val
-```
+`train.py` and `predict.py` are still placeholders (they raise `NotImplementedError`); use the notebook.
+
+1. Upload `notebooks/01_mass_only_baseline.ipynb` to Google Colab (no GPU needed). The competition data must be on Google Drive
+   at the path in the notebook's first code cell (`DRIVE_DATA_DIR`).
+2. **Runtime > Run all.** It builds the `casmi-split-v1` validation split, runs the ablation, writes
+   `submission.csv`, and saves a timestamped run folder under `DRIVE_RUN_ROOT`.
+3. To submit: import the same notebook into a Kaggle notebook for the competition, attach the competition data,
+   turn Internet off and **Save & Run All**, then submit the output. On Kaggle it skips validation and uses the
+   settings in the first code cell (`SUBMIT_*`).
 
 ## Results
 
-Validation uses Member 3's own structure-level split (`make_split`, salt `casmi-split-v1`, 2,912 molecules), not the team's frozen split, which doesn't exist yet. Rerun on the frozen split when Member 5 publishes it. LB is the public Kaggle leaderboard.
+Exploratory validation: Member 3's own structure-level split (`make_split`, salt `casmi-split-v1`, 2,912 molecules). It is not the team's frozen split, so `val_mrr` in the experiment entry stays empty until the frozen split is evaluated, and this split's scores are written to `outputs/exploratory/casmi-split-v1/`. LB is the public Kaggle leaderboard.
 
-| version | date | val MRR@25 | LB MRR@25 | notes |
-|---------|------|------------|-----------|-------|
-| B1 | 2026-11-11 | 0.2642 | 0.103 | mass only, 5 ppm, prior_then_ppm; run `baseline_mass_only_20261111_070243` |
+| version | date | frozen val MRR@25 | exploratory val MRR@25 | LB MRR@25 | notes |
+|---------|------|-------------------|------------------------|-----------|-------|
+| B1 | 2026-11-11 | pending | 0.2642 | 0.103 | mass only, 5 ppm, prior_then_ppm; run `baseline_mass_only_20261111_070243` |
 
-### Per-class val MRR@25
+### Per-class exploratory val MRR@25 (casmi-split-v1)
 | class | n | MRR@25 | top-1 | top-25 | 95% CI |
 |-------|---|--------|-------|--------|--------|
 | class 1 | 1413 | 0.4282 | 0.2916 | 0.8450 | 0.4073-0.4492 |

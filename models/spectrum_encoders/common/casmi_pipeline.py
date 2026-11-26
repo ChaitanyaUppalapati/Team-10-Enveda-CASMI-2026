@@ -631,23 +631,56 @@ def predict_probs(model, mz, intensity, precursor, adduct, device, batch=512):
     return np.concatenate(chunks)
 
 
-def rank_by_fingerprint(pool, pool_fp_packed, spectra, probs, ppm=10.0):
-    """Average probabilities across a molecule's spectra and rank candidates by soft Tanimoto."""
+def order_by_score(scores, keys):
+    """Positions sorted by score (descending), ties broken by inchikey14 (ascending).
+
+    Same rule as casmi.interfaces.rank_candidates, so a CandidateScores table re-ranked by
+    the team code gives exactly the order this pipeline submits.
+    """
+    return np.lexsort((np.asarray(keys).astype(str), -np.asarray(scores, dtype=np.float64)))
+
+
+def rank_by_fingerprint(pool, pool_fp_packed, spectra, probs, ppm=10.0, return_scores=False):
+    """Average probabilities across a molecule's spectra and rank candidates by soft Tanimoto.
+
+    Candidates inside the mass window are ordered by soft Tanimoto, ties by inchikey14. Lists
+    shorter than TOP_K are filled with the nearest masses. With return_scores=True, also return
+    {molecule_id: scores} aligned with each ranking: the soft Tanimoto for window candidates and
+    -rank / 1000 for fill candidates, so sorting by score reproduces the ranking.
+    """
     pool_mass = pool.mass.to_numpy()
+    pool_keys = pool.key.to_numpy()
     spectra = spectra.copy()
     spectra["pos"] = np.arange(len(spectra))
-    rankings = {}
+    rankings, scores = {}, {}
     for mol, group in spectra.groupby("molecule_id", sort=False):
         mass = float(group.neutral_mass.median())
         idx = window_indices(pool_mass, mass, ppm)
+        tanimoto = np.zeros(0)
         if len(idx):
             p = probs[group.pos.to_numpy()].mean(axis=0)
             bits = np.unpackbits(pool_fp_packed[idx], axis=1).astype(np.float32)
             overlap = bits @ p
-            tanimoto = overlap / (p.sum() + bits.sum(axis=1) - overlap + 1e-8)
-            idx = idx[np.argsort(-tanimoto, kind="stable")]
+            tanimoto = (overlap / (p.sum() + bits.sum(axis=1) - overlap + 1e-8)).astype(np.float64)
+            order = order_by_score(tanimoto, pool_keys[idx])
+            idx, tanimoto = idx[order], tanimoto[order]
         rankings[mol] = fill_to_k(idx, pool_mass, mass)
-    return rankings
+        n_window = min(len(idx), TOP_K)
+        fill = [-rank / 1000.0 for rank in range(n_window + 1, len(rankings[mol]) + 1)]
+        scores[mol] = np.concatenate([tanimoto[:n_window], fill])
+    return (rankings, scores) if return_scores else rankings
+
+
+def fingerprint_candidate_scores(pool, pool_fp_packed, spectra, probs, ppm=10.0):
+    """CandidateScores table (query_id, inchikey14, score) in exactly the submitted order."""
+    rankings, scores = rank_by_fingerprint(pool, pool_fp_packed, spectra, probs, ppm, return_scores=True)
+    keys = pool.key.to_numpy()
+    rows = [
+        (mol, keys[i], float(s))
+        for mol, ranked in rankings.items()
+        for i, s in zip(ranked[:TOP_K], scores[mol][:TOP_K], strict=True)
+    ]
+    return pd.DataFrame(rows, columns=["query_id", "inchikey14", "score"])
 
 
 def train_model(

@@ -162,6 +162,49 @@ def test_make_split_is_deterministic_and_leak_free():
     assert counts.between(1, 6).all()
 
 
+def _tie_case():
+    """Pool where tied candidates sit in mass order opposite to their inchikey14 order."""
+    n = 40
+    keys = [f"{chr(90 - i % 26)}{chr(65 + i // 26)}AAAAAAAAAAAA" for i in range(n)]  # descending with mass
+    pool = pd.DataFrame({"key": keys, "smiles": ["C"] * n, "mass": np.linspace(300.0, 300.001, n)})
+    fp = np.zeros((n, 2048), dtype=bool)
+    fp[:, :8] = True  # every candidate has the same fingerprint -> identical Tanimoto
+    fp[5, 8:40] = True  # one clearly different candidate
+    spectra = pd.DataFrame({"molecule_id": ["q1", "q1", "q2"], "neutral_mass": [300.0005, 300.0005, 400.0]})
+    probs = np.zeros((3, 2048), dtype=np.float32)
+    probs[:, :8] = 0.9
+    return pool, np.packbits(fp, axis=1), spectra, probs
+
+
+def test_fingerprint_ties_break_by_inchikey14():
+    pool, fp, spectra, probs = _tie_case()
+    rankings, scores = pipeline.rank_by_fingerprint(pool, fp, spectra, probs, ppm=10, return_scores=True)
+    ranked = rankings["q1"]
+    keys = pool.key.to_numpy()[ranked]
+    s = scores["q1"]
+    assert (np.diff(s) <= 0).all(), "scores must be non-increasing in ranking order"
+    for value in np.unique(s):
+        tied = keys[s == value]
+        assert list(tied) == sorted(tied), "tied candidates must be ordered by inchikey14"
+
+
+def test_exported_scores_rerank_to_the_same_order():
+    """Regression: the team ranker must reproduce the notebook order, including ties and fill candidates."""
+    from casmi.interfaces import rank_candidates, validate_candidate_scores
+
+    pool, fp, spectra, probs = _tie_case()
+    rankings = pipeline.rank_by_fingerprint(pool, fp, spectra, probs, ppm=10)
+    table = pipeline.fingerprint_candidate_scores(pool, fp, spectra, probs, ppm=10)
+    validate_candidate_scores(table, max_per_query=pipeline.TOP_K)
+    reranked = rank_candidates(table)
+    keys = pool.key.to_numpy()
+    for mol, ranked in rankings.items():
+        expected = list(keys[ranked[: pipeline.TOP_K]])
+        assert reranked[reranked.query_id == mol].inchikey14.tolist() == expected
+    # q2 has no candidate in its mass window: every row is a fill candidate with a negative score
+    assert (table[table.query_id == "q2"].score < 0).all()
+
+
 def test_write_submission_format(tmp_path):
     pool = pd.DataFrame({"smiles": [f"C{i}" for i in range(30)]})
     test = pd.DataFrame({"molecule_id": ["m1", "m1", "m2"]})
