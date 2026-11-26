@@ -5,6 +5,7 @@ import zlib
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -54,7 +55,8 @@ def make_files(tmp_path):
                          "molecular_formula": rdMolDescriptors.CalcMolFormula(mol), "ionization_mode": mode,
                          "instrument_type": "QTOF", "adduct": "[M+H]+", "precursor_mz": mass + cp.PROTON,
                          "precursor_error_ppm": 0.0, "num_peaks": len(mz), "ms2_mzs": mz,
-                         "ms2_normalized_intensities": it})
+                         "ms2_normalized_intensities": it,
+                         "collision_energy_ev": None if s == 5 else [10.0 * (s + 1), 10.0 * (s + 2)]})
     pq.write_table(pa.Table.from_pylist(rows), tmp_path / "train.parquet", row_group_size=50)
     trows = []
     for j, smi in enumerate(SMILES[:8]):
@@ -63,7 +65,7 @@ def make_files(tmp_path):
             mz, it = spectrum(key, mass, rng)
             trows.append({"molecule_id": f"m{j}", "spectrum_id": f"s{j}_{s}", "adduct": "[M+H]+",
                           "ionization_mode": "positive", "precursor_mz": mass + cp.PROTON, "ms2_mzs": mz,
-                          "ms2_normalized_intensities": it})
+                          "ms2_normalized_intensities": it, "collision_energy_ev": [20.0 + 10 * s]})
     pq.write_table(pa.Table.from_pylist(trows), tmp_path / "test.parquet")
 
 
@@ -88,6 +90,29 @@ def test_bin_batch_drops_precursor_and_is_unit_norm():
     assert X[0, 50] == pytest.approx(1.0) and X[0, 99] == 0 and X[0, 120] == 0
     # every peak is above the precursor: keep them rather than return an empty spectrum
     assert np.linalg.norm(X[1]) == pytest.approx(1.0)
+
+
+def test_neutral_loss_block_and_off_switch():
+    t = pa.table({"ms2_mzs": [[50.0, 82.0, 99.8]], "ms2_normalized_intensities": [[1.0, 1.0, 1.0]],
+                  "precursor_mz": [100.0]}).to_batches()[0]
+    plain = T.bin_batch(t, np.array([0]), 200, 1.0)
+    assert np.array_equal(T.bin_batch(t, np.array([0]), 200, 1.0, 0), plain)  # off = v2 exactly
+    X = T.bin_batch(t, np.array([0]), 200, 1.0, 60)
+    assert X.shape == (1, 260) and np.linalg.norm(X[0]) == pytest.approx(1.0)
+    assert X[0, 50] > 0 and X[0, 82] > 0 and X[0, 200 + 50] > 0 and X[0, 200 + 18] > 0  # losses 50 and 18 Da
+    assert X[0, 200:].sum() == pytest.approx(X[0, :200].sum())  # same two peaks in each block
+    assert T.FusionConfig(n_bins=200, n_loss_bins=60).dim == 260
+
+
+def test_collision_energy_features(tmp_path):
+    p = tmp_path / "ce.parquet"
+    pq.write_table(pa.table({"collision_energy_ev": [[10.0, 30.0], None, [], [40.0]]}), p)
+    ce = T.collision_energy(str(p), 4)
+    assert np.allclose(ce, [[0.2, 0.2, 1.0], [0, 0, 0], [0, 0, 0], [0.4, 0.0, 1.0]])
+    pq.write_table(pa.table({"other": [1, 2]}), p)
+    assert (T.collision_energy(str(p), 2) == 0).all()  # column missing: zeros
+    frame = pd.DataFrame({"precursor_mz": [100.0], "ionization_mode": ["positive"], "adduct": ["[M+H]+"]})
+    assert T.side_features(cp, frame, np.ones((1, 3))).shape[1] == T.side_features(cp, frame).shape[1] + 3
 
 
 def test_rrf_ties_and_reciprocal_ranks():

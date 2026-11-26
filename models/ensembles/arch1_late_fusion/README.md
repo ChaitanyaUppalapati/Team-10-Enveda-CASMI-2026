@@ -6,7 +6,18 @@
 Weighted combination of normalised scores from B2 and fingerprint models.
 
 ## Ways to run
-1. **Team split, standalone (main version)**: `notebooks/kaggle_fusion_team_split.ipynb`, on Kaggle with a GPU
+0. **v3, PubChem-scale recall + priors**: `notebooks/kaggle_v3_recall_priors.ipynb` (code:
+   `../ensemble_common/standalone/recall.py`). v2's pipeline plus a per-molecule PubChem channel (the 105.9M-structure
+   tier, scored with our own fingerprint MLP), a documentation prior `pop` and a natural-product flag `np` as fusion
+   sources, and validation copies that treat each structure as unknown (not a training structure, no library
+   spectra), which is the hidden test's situation. Fusion weights are tuned, cross-fitted, on
+   0.2 × class 2 + 0.8 × unknown-structure copies instead of balanced MRR. The ideas come from the public CASMI 2026
+   notebooks (documentation prior, PubChem channel, uniqueness rule); the code is ours and the datasets are credited
+   in the notebook. **v3.1** (`notebooks/kaggle_v3_1_ce_losses.ipynb`) is the same notebook with two richer MLP
+   inputs switched on: collision energy (mean, ramp width, present; `teamsplit.collision_energy`) and a
+   neutral-loss block (precursor − fragment, 500 bins; `FusionConfig.n_loss_bins`). Both are off by default, so
+   v2 and v3 are unchanged.
+1. **Team split, standalone (v2)**: `notebooks/kaggle_fusion_team_split.ipynb`, on Kaggle with a GPU
    and internet off. It validates on **the same split as Member 3 and Member 7**: Member 3's
    `casmi_pipeline.make_split` (salt `casmi-split-v1`), `max_query_spectra=16`, `sample_molecules(..., 3000)`,
    a 10 ppm window, and Member 3's pool and `evaluate`. It trains three sources in the notebook
@@ -48,7 +59,13 @@ score parquets and `fp_mlp.pt` are on the team Drive, not in git.
 | version | date | val MRR@25 (balanced) | LB MRR@25 | notes |
 |---------|------|------------|-----------|-------|
 | v1 | 2026-11-24 | 0.030 absent / 0.334 covered | – | own crc32 split, not comparable |
-| v2 | 2026-11-25 | **0.687** (95% CI 0.669–0.706) | TBD | team split, gated z-score fusion, cross-fitted |
+| v2 | 2026-11-25 | **0.687** (95% CI 0.669–0.706) | **0.200** | team split, gated z-score fusion, cross-fitted |
+
+**Reading the LB score.** Member 7 found LB ≈ (share of hidden answers in the pool, about 0.37 for this 1.1M
+pool) × (MRR when the structure has no library spectra). With our class 2 MRR of 0.558 that predicts
+0.37 × 0.558 ≈ 0.206, close to the 0.200 we got. Two consequences: the hidden test behaves like class 2, so
+the balanced score that chose `gated_z` was the wrong target (fp_tani alone has class 2 0.648, about 0.24
+by the same estimate). And candidate recall, not the model, caps the score.
 
 ### All methods, val MRR@25 (fusion rows are 2-fold cross-fitted)
 | method | balanced | class 1 | class 2 | np proxy | top-1 | top-25 |

@@ -46,6 +46,11 @@ class FusionConfig:
     min_bin: int = 40               # gated: smaller bins fall back to the global weights
     rrf_k: float = 60.0
     seed: int = 2026
+    n_loss_bins: int = 0            # v3.1: extra bins of precursor - fragment mass (0 = off, as v2)
+
+    @property
+    def dim(self) -> int:
+        return self.n_bins + self.n_loss_bins
 
 
 # ---------- spectra -> unit vectors ----------
@@ -57,13 +62,49 @@ def mode_ids(values) -> np.ndarray:
     return s.str.startswith("neg").to_numpy().astype(np.int64)
 
 
-def side_features(cp, frame: pd.DataFrame) -> np.ndarray:
-    """precursor m/z / 1000, ion mode and an adduct one-hot (index 0 = other adducts)."""
+def side_features(cp, frame: pd.DataFrame, ce: np.ndarray | None = None) -> np.ndarray:
+    """precursor m/z / 1000, ion mode and an adduct one-hot (index 0 = other adducts).
+
+    ce (v3.1): optional (len(frame), 3) collision-energy features from ``collision_energy``, appended.
+    """
     n = len(frame)
     out = np.zeros((n, 2 + cp.N_ADDUCTS), dtype=np.float32)
     out[:, 0] = frame["precursor_mz"].to_numpy(dtype=float) / 1000.0
     out[:, 1] = mode_ids(frame["ionization_mode"])
     out[np.arange(n), 2 + cp.adduct_ids(frame["adduct"].astype(str))] = 1.0
+    return out if ce is None else np.hstack([out, np.asarray(ce, dtype=np.float32)])
+
+
+def collision_energy(path: str, n_rows: int, column: str = "collision_energy_ev") -> np.ndarray:
+    """Per parquet row: [mean eV / 100, (max - min) eV / 100, has a value]. Missing or empty lists give zeros.
+
+    The column holds 1-6 energies per spectrum (ramped acquisitions) or null.
+    """
+    out = np.zeros((n_rows, 3), dtype=np.float32)
+    f = pq.ParquetFile(path)
+    if column not in f.schema_arrow.names:
+        return out
+    col = f.read(columns=[column]).column(0).combine_chunks()
+    if not hasattr(col, "offsets"):           # a plain number per row
+        v = col.to_numpy(zero_copy_only=False).astype(float)
+        ok = np.isfinite(v)
+        out[ok, 0], out[ok, 2] = v[ok] / 100.0, 1.0
+        return out
+    off = np.asarray(col.offsets)
+    vals = col.values.to_numpy(zero_copy_only=False).astype(float)
+    owner = np.repeat(np.arange(len(off) - 1), np.diff(off))
+    ok = np.isfinite(vals)
+    owner, vals = owner[ok], vals[ok]
+    cnt = np.bincount(owner, minlength=n_rows)[:n_rows]
+    has = cnt > 0
+    mean = np.bincount(owner, vals, n_rows)[:n_rows] / np.maximum(cnt, 1)
+    hi = np.full(n_rows, -np.inf)
+    lo = np.full(n_rows, np.inf)
+    np.maximum.at(hi, owner, vals)
+    np.minimum.at(lo, owner, vals)
+    out[has, 0] = mean[has] / 100.0
+    out[has, 1] = (hi[has] - lo[has]) / 100.0
+    out[has, 2] = 1.0
     return out
 
 
@@ -78,23 +119,39 @@ def _flat(col, rows: np.ndarray):
     return vals[pos].astype(np.float64), owner
 
 
-def bin_batch(batch, rows: np.ndarray, n_bins: int, bin_width: float) -> np.ndarray:
+def bin_batch(batch, rows: np.ndarray, n_bins: int, bin_width: float, n_loss_bins: int = 0) -> np.ndarray:
     """Binned, sqrt-scaled, L2-normalised spectra for ``rows`` of a record batch.
 
     Peaks within 0.5 Da of the precursor or above it are dropped (they are the same for every
     candidate in the mass window). A spectrum left with no peaks keeps them instead.
+    n_loss_bins > 0 (v3.1) appends a neutral-loss block: the same peaks binned by precursor - m/z
+    (water, sugars, methyl groups...). Each block is normalised, then the whole vector.
     """
+    X = _peak_bins(batch, rows, n_bins, bin_width, 0)
+    if n_loss_bins <= 0:
+        return X
+    L = _peak_bins(batch, rows, n_loss_bins, bin_width, 1)
+    out = np.hstack([X, L])
+    return out / np.maximum(np.linalg.norm(out, axis=1, keepdims=True), 1e-12)
+
+
+def _peak_bins(batch, rows: np.ndarray, n_bins: int, bin_width: float, loss: int) -> np.ndarray:
+    """loss=0: bins of m/z. loss=1: bins of precursor - m/z, for the same kept peaks."""
     mz, owner = _flat(batch.column(SPEC_COLS[0]), rows)
     it, owner_i = _flat(batch.column(SPEC_COLS[1]), rows)
     if len(mz) != len(it) or not np.array_equal(owner, owner_i):
         raise ValueError("m/z and intensity lists have different lengths")
     prec = batch.column(SPEC_COLS[2]).to_numpy(zero_copy_only=False)[rows].astype(float)
-    base = np.isfinite(mz) & np.isfinite(it) & (mz > 0) & (it > 0) & (mz < n_bins * bin_width)
-    limit = np.where(np.isfinite(prec), prec - 0.5, np.inf)[owner]
-    ok = base & (mz < limit)
-    empty = np.bincount(owner[ok], minlength=len(rows)) == 0
-    if empty.any():
-        ok |= base & empty[owner]
+    if loss:
+        mz = np.where(np.isfinite(prec[owner]), prec[owner] - mz, np.nan)
+        ok = np.isfinite(mz) & np.isfinite(it) & (mz >= 0.5) & (it > 0) & (mz < n_bins * bin_width)
+    else:
+        base = np.isfinite(mz) & np.isfinite(it) & (mz > 0) & (it > 0) & (mz < n_bins * bin_width)
+        limit = np.where(np.isfinite(prec), prec - 0.5, np.inf)[owner]
+        ok = base & (mz < limit)
+        empty = np.bincount(owner[ok], minlength=len(rows)) == 0
+        if empty.any():
+            ok |= base & empty[owner]
     flat = owner[ok] * n_bins + (mz[ok] / bin_width).astype(np.int64)
     X = np.bincount(flat, weights=np.sqrt(it[ok]), minlength=len(rows) * n_bins)
     X = X.reshape(len(rows), n_bins).astype(np.float32)
@@ -109,13 +166,13 @@ def iter_binned(path: str, select: np.ndarray | None, cfg: FusionConfig):
         n = batch.num_rows
         local = np.arange(n) if select is None else np.flatnonzero(select[start : start + n])
         if len(local):
-            yield start + local, bin_batch(batch, local, cfg.n_bins, cfg.bin_width)
+            yield start + local, bin_batch(batch, local, cfg.n_bins, cfg.bin_width, cfg.n_loss_bins)
         start += n
 
 
 def bin_file(path: str, n_rows: int, cfg: FusionConfig) -> np.ndarray:
     """All rows of a (small) parquet, e.g. test.parquet, as float16."""
-    out = np.zeros((n_rows, cfg.n_bins), dtype=np.float16)
+    out = np.zeros((n_rows, cfg.dim), dtype=np.float16)
     for rows, X in iter_binned(path, None, cfg):
         out[rows] = X
     return out
@@ -189,8 +246,8 @@ def build_libraries(cp, meta: pd.DataFrame, lib_mask: np.ndarray, pool: pd.DataF
     row_pool = meta.inchikey14.map(key_index).fillna(-1).to_numpy().astype(np.int64)
     row_mode = mode_ids(meta.ionization_mode)
     usable = meta.good_label.to_numpy() & (meta.num_peaks.to_numpy() >= 3) & (row_pool >= 0)
-    val = Centroids(val_need, len(pool), cfg.n_bins)
-    test = Centroids(test_need, len(pool), cfg.n_bins)
+    val = Centroids(val_need, len(pool), cfg.dim)
+    test = Centroids(test_need, len(pool), cfg.dim)
     val_cid = np.where(usable & lib_mask, val.ids(row_pool, row_mode), -1)
     test_cid = np.where(usable, test.ids(row_pool, row_mode), -1)
     return Libraries(val, test, val_cid, test_cid)
@@ -205,7 +262,7 @@ def feature_pass(path: str, n_rows: int, libs: Libraries, wanted: dict, cfg: Fus
     outs, pos = {}, {}
     for name, rows in wanted.items():
         rows = np.asarray(rows, dtype=np.int64)
-        outs[name] = np.zeros((len(rows), cfg.n_bins), dtype=np.float16)
+        outs[name] = np.zeros((len(rows), cfg.dim), dtype=np.float16)
         where = np.full(n_rows, -1, dtype=np.int64)
         where[rows] = np.arange(len(rows))
         pos[name] = where
