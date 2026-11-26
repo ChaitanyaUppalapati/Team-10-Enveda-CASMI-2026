@@ -33,6 +33,15 @@ Weighted combination of normalised scores from B2 and fingerprint models.
 3. **Fusing other members' score files**: fill `inputs` and `truth` in `config.yaml`, then use
    `train.py` / `predict.py` (the "How to run" section below).
 
+### Exported score files (Kaggle notebooks, `m8_results/`; on the team Drive, not in git)
+- `val_scores.parquet`, `test_scores.parquet`: **raw mass-window scores** for stacking. One row per
+  candidate inside each molecule's 10 ppm window, the fused `score` plus each source's score. They do not
+  reproduce the submission: molecules with an empty window are absent, there is no `fill_to_k` filler or
+  B1 fallback, and equal fused scores are ordered by pool position, not by InChIKey14.
+- `val_ranking.parquet`, `test_ranking.parquet`: **the final ranking** (every molecule, its 25 submitted
+  candidates with filler and B1 fallback, plus `rank`). `score = 1 / rank` is strictly decreasing, so
+  `casmi.interfaces.rank_candidates` returns exactly the submitted order. The validation one is cross-fitted.
+
 ## Inputs (score-file mode)
 - Spectra from `casmi.data` + `casmi.preprocess` (Member 2)
 - Candidates from `casmi.candidates` (Member 4), targets from `casmi.fingerprints` (Member 1)
@@ -47,16 +56,22 @@ written by `casmi.interfaces.write_scores`.
 python models/ensembles/arch1_late_fusion/train.py --config models/ensembles/arch1_late_fusion/config.yaml
 python models/ensembles/arch1_late_fusion/predict.py --config models/ensembles/arch1_late_fusion/config.yaml --split val
 ```
+`train.py` tunes the weights on `val` and writes `fusion.json` with `oof_val_mrr` (each query scored with
+weights tuned on the other `n_splits` folds, default 5; this is the number to report) and
+`in_sample_val_mrr` (optimistic, for reference only). `predict.py --split val` writes those out-of-fold scores,
+never the in-sample fit. `--split test` applies the weights fitted on all of `val`.
 
-## Results (frozen validation split; add an experiment entry for every row)
-Team split (Member 3's `make_split`, 2,912 molecules, 10 ppm). The committed, internet-off Kaggle version
+## Results (exploratory: Member 3's `casmi-split-v1`, not yet Member 5's frozen split)
+These numbers are **exploratory**. They come from Member 3's `make_split` (salt `casmi-split-v1`, 2,912
+molecules, 10 ppm), not from the frozen split in `data/splits/`, so `val_mrr` stays empty in the shared
+experiment log until this model is re-scored on the frozen split with `casmi.evaluation.scorer`. The committed, internet-off Kaggle version
 (`casmi-m8-late-fusion-team-split`) is in `notebooks/kaggle_fusion_team_split_run.ipynb`. It ran on a Tesla T4
 in 18 min end to end, with a pool of 1,097,770 structures (275,810 training + 731,583 COCONUT +
 461,082 PubChemLite, deduplicated). Its small outputs (report, per-method tables, `summary.json` with the
 chosen weights, MLP training history) are in `results/`, and its figures are in `slides/figures/m8/`. The
 score parquets and `fp_mlp.pt` are on the team Drive, not in git.
 
-| version | date | val MRR@25 (balanced) | LB MRR@25 | notes |
+| version | date | exploratory val MRR@25 (balanced, `casmi-split-v1`) | LB MRR@25 | notes |
 |---------|------|------------|-----------|-------|
 | v1 | 2026-11-24 | 0.030 absent / 0.334 covered | – | own crc32 split, not comparable |
 | v2 | 2026-11-25 | **0.687** (95% CI 0.669–0.706) | **0.200** | team split, gated z-score fusion, cross-fitted |

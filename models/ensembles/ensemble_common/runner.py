@@ -18,7 +18,7 @@ from casmi.interfaces import QUERY_ID, TOP_K, rank_candidates
 from casmi.utils.config import load_paths
 
 from . import stacking
-from .fusion import fuse, tune_weights
+from .fusion import fuse, out_of_fold_fusion, tune_weights
 from .inputs import load_inputs
 from .metrics import mrr_at_k
 from .normalize import normalize
@@ -46,21 +46,39 @@ def _top_k(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ---- arch 1: late fusion -------------------------------------------------------------
+def _oof_fusion(cfg: dict, norm: pd.DataFrame, truth: pd.DataFrame, ids: list[str]):
+    return out_of_fold_fusion(norm, truth, ids, n_splits=cfg.get("n_splits", 5),
+                              n_random=cfg.get("n_random", 200), seed=cfg.get("seed", 2026))
+
+
 def train_fusion(cfg: dict) -> dict:
+    """Tune weights on ``val`` and report them with an out-of-fold (cross-fitted) val MRR.
+
+    ``in_sample_val_mrr`` uses weights fitted on the same queries, so it is optimistic and only for
+    reference; ``oof_val_mrr`` is the number to report. The saved weights (fitted on all of ``val``)
+    are the ones applied to ``test``.
+    """
     ids, method = list(cfg["inputs"]), cfg.get("method", "rrf")
     wide, truth = load_inputs(ids, "val"), load_truth(cfg)
     norm = normalize(wide, ids, method)
-    weights, best = tune_weights(norm, truth, ids, n_random=cfg.get("n_random", 200), seed=cfg.get("seed", 2026))
+    weights, in_sample = tune_weights(norm, truth, ids, n_random=cfg.get("n_random", 200),
+                                      seed=cfg.get("seed", 2026))
+    oof, fold_weights = _oof_fusion(cfg, norm, truth, ids)
     solo = {m: mrr_at_k(fuse(norm, {m: 1.0}), truth) for m in ids}
-    report = {"method": method, "weights": weights, "fused_val_mrr": best, "single_model_val_mrr": solo}
+    report = {"method": method, "weights": weights, "oof_val_mrr": mrr_at_k(oof, truth),
+              "in_sample_val_mrr": in_sample, "fold_weights": fold_weights, "single_model_val_mrr": solo}
     (artefact_dir(cfg) / "fusion.json").write_text(json.dumps(report, indent=2))
     return report
 
 
 def predict_fusion(cfg: dict, split: str) -> pd.DataFrame:
+    """CandidateScores for ``split``. For ``val`` these are out-of-fold scores, never the in-sample fit."""
     report = json.loads((artefact_dir(cfg) / "fusion.json").read_text())
     ids = list(report["weights"])
     norm = normalize(load_inputs(ids, split), ids, report["method"])
+    if split == "val":
+        # The saved weights were tuned on val labels; score each val query with weights from the other folds.
+        return _top_k(_oof_fusion(cfg, norm, load_truth(cfg), ids)[0])
     return _top_k(fuse(norm, report["weights"]))
 
 

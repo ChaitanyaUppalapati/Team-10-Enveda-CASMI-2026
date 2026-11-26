@@ -3,7 +3,7 @@ member: 8
 model_id: ensembles.arch1_late_fusion
 version: v2
 change: "team split (Member 3 make_split, same as Member 7); COCONUT + PubChemLite pool (1.1M); fingerprint MLP on 1.2M spectra; gated z-score fusion of library cosine, fp log-likelihood and soft Tanimoto"
-val_mrr: 0.6871             # balanced, 2-fold cross-fitted; class 1 0.8165, class 2 0.5577, np proxy 0.5787
+val_mrr: null               # not yet evaluated on Member 5's frozen split (data/splits/)
 lb_score: 0.200             # public LB, scored 2026-11-26
 submitted: true
-notes: "Run: models/ensembles/arch1_late_fusion/notebooks/kaggle_fusion_team_split_run.ipynb (T4, 18 min). B1 on the same split 0.2654. Best single source fp_tani 0.6092."
+notes: "EXPLORATORY, not the frozen split: 0.6871 balanced MRR@25 (95% CI 0.669-0.706), 2-fold cross-fitted, on Member 3's casmi-split-v1 (class 1 0.8165, class 2 0.5577, np proxy 0.5787). B1 on the same split 0.2654; best single source fp_tani 0.6092. Run: models/ensembles/arch1_late_fusion/notebooks/kaggle_fusion_team_split_run.ipynb (T4, 18 min)."

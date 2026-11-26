@@ -172,5 +172,15 @@ def test_end_to_end_on_team_split(tmp_path):
     assert np.mean([a == b for a, b in zip(top1, want, strict=True)]) >= 0.75
     table = T.score_table(sc_te, pool, T.apply_best(rep, sc_te, CFG))
     assert {"query_id", "inchikey14", "score", *T.SOURCES} <= set(table.columns)
+    # the ranking export reproduces the submitted order through the shared ranker, fallback molecules included
+    from casmi.interfaces import rank_candidates
+
+    ranks["fallback_mol"] = cp.rank_b1(pool, float(pool.mass.iloc[0]), 10)
+    exported = T.ranking_table(ranks, pool)
+    back = rank_candidates(exported[["query_id", "inchikey14", "score"]])
+    keys = pool.key.to_numpy()
+    for m, idx in ranks.items():
+        assert back.loc[back.query_id == m, "inchikey14"].tolist() == [keys[j] for j in idx[:25]]
+    assert set(back.query_id) == set(ranks)
     assert T.coverage(sc, truth)["truth_in_window"] == 1.0
     T.describe(rep["params"]["gated_z"])

@@ -575,12 +575,31 @@ def coverage(sc: Scores, truth: pd.DataFrame | None = None) -> dict:
 
 
 def score_table(sc: Scores, pool: pd.DataFrame, fused: np.ndarray) -> pd.DataFrame:
-    """Long table in the team format (query_id, inchikey14, score) plus each source's raw score."""
+    """Raw mass-window scores: (query_id, inchikey14, score) plus each source's score, for stacking.
+
+    Only candidates inside each molecule's mass window, and only molecules with a non-empty window. It does
+    not reproduce the final ranking (no ``fill_to_k`` filler, no B1 fallback, ties broken by pool order);
+    use :func:`ranking_table` for that.
+    """
     df = pd.DataFrame({"query_id": np.asarray(sc.mols, dtype=object)[sc.seg],
                        "inchikey14": pool.key.to_numpy()[sc.cand], "score": fused})
     for s in SOURCES:
         df[s] = sc.src[s]
     return df
+
+
+def ranking_table(ranks: dict, pool: pd.DataFrame) -> pd.DataFrame:
+    """The final ranking as CandidateScores: every molecule, its 25 submitted candidates, ``rank`` 1..25.
+
+    ``ranks`` is the dict passed to ``write_submission`` (fallbacks and filler included). The score is
+    ``1 / rank``, strictly decreasing, so ``casmi.interfaces.rank_candidates`` (ties by inchikey14)
+    returns exactly this order.
+    """
+    keys = pool.key.to_numpy()
+    rows = [(mol, keys[j], r) for mol, idx in ranks.items() for r, j in enumerate(idx, start=1)]
+    df = pd.DataFrame(rows, columns=["query_id", "inchikey14", "rank"])
+    df["score"] = 1.0 / df["rank"]
+    return df[["query_id", "inchikey14", "score", "rank"]]
 
 
 def describe(params: dict) -> dict:
@@ -596,5 +615,5 @@ def describe(params: dict) -> dict:
 __all__ = [
     "FusionConfig", "Libraries", "Centroids", "Scores", "SOURCES", "side_features", "iter_binned", "bin_file",
     "build_libraries", "feature_pass", "score_molecules", "normalize", "reciprocal_ranks", "tune_and_evaluate",
-    "add_row", "apply_best", "rankings", "coverage", "score_table", "describe",
+    "add_row", "apply_best", "rankings", "coverage", "score_table", "ranking_table", "describe",
 ]

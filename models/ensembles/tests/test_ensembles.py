@@ -86,6 +86,23 @@ def test_fusion_beats_each_model_when_they_are_complementary():
     assert sum(weights.values()) == pytest.approx(1.0)
 
 
+def test_out_of_fold_fusion_never_uses_its_own_labels():
+    """Each fold's weights are tuned without that fold's truth: changing a held-out label cannot move them."""
+    from ensemble_common.fusion import out_of_fold_fusion, query_folds
+
+    a, b, truth = make_world(40, 10)
+    ids = ["A", "B"]
+    norm = normalize(align_scores({"A": a, "B": b}), ids, "zscore")
+    oof, fold_w = out_of_fold_fusion(norm, truth, ids, n_splits=4, n_random=30)
+    assert len(oof) == len(norm) and oof.index.equals(norm.index) and len(fold_w) == 4
+    folds = query_folds(norm["query_id"], 4)
+    q0 = folds[folds == 0].index
+    wrong = truth.assign(inchikey14=np.where(truth.query_id.isin(q0), key(5), truth.inchikey14))
+    _, fold_w2 = out_of_fold_fusion(norm, wrong, ids, n_splits=4, n_random=30)
+    assert fold_w2[0] == fold_w[0]
+    assert mrr_at_k(oof, truth) > max(mrr_at_k(a, truth), mrr_at_k(b, truth)) - 0.05
+
+
 def test_stacker_oof_is_leak_free_and_competitive():
     a, b, truth = make_world(60, 12)
     ids = ["A", "B"]
@@ -147,3 +164,11 @@ def test_end_to_end_cli(tmp_path, monkeypatch):
             out = read_scores(f"ensembles.{arch}", split)
             assert out.groupby("query_id").size().max() <= 25
         assert mrr_at_k(read_scores(f"ensembles.{arch}", "val"), truth) > 0.3
+
+    import json
+
+    report = json.loads((tmp_path / "models" / "ensembles.arch1_late_fusion" / "fusion.json").read_text())
+    assert {"oof_val_mrr", "in_sample_val_mrr", "fold_weights"} <= set(report)
+    # val export = out-of-fold scores, so it matches the reported honest number, not the in-sample one
+    val = read_scores("ensembles.arch1_late_fusion", "val")
+    assert mrr_at_k(val, truth) == pytest.approx(report["oof_val_mrr"])

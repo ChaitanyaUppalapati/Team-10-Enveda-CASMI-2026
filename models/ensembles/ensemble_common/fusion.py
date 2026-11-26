@@ -46,3 +46,39 @@ def tune_weights(
         if mrr > best + 1e-12:
             best_w, best = w, mrr
     return {m: float(x) for m, x in zip(model_ids, best_w, strict=True)}, float(best)
+
+
+def query_folds(query_ids: pd.Series, n_splits: int = 5, seed: int = 2026) -> pd.Series:
+    """query_id -> fold in 0..n_splits-1 (seeded shuffle of the sorted unique ids)."""
+    q = np.sort(pd.unique(query_ids.astype(str)))
+    fold = np.random.default_rng(seed).permutation(len(q)) % n_splits
+    return pd.Series(fold, index=q)
+
+
+def out_of_fold_fusion(
+    norm: pd.DataFrame,
+    truth: pd.DataFrame,
+    model_ids: list[str],
+    *,
+    n_splits: int = 5,
+    n_random: int = 200,
+    seed: int = 2026,
+    k: int = TOP_K,
+) -> tuple[pd.DataFrame, list[dict[str, float]]]:
+    """Fused scores where every query uses weights tuned on the *other* folds; returns (scores, fold weights).
+
+    This is the honest way to report a tuned fusion on the split it was tuned on: no query is scored
+    with weights that saw its own label.
+    """
+    fold_of = query_folds(norm[QUERY_ID], n_splits, seed)
+    q_fold = norm[QUERY_ID].astype(str).map(fold_of).to_numpy()
+    t_fold = truth[QUERY_ID].astype(str).map(fold_of).to_numpy()
+    parts, weights = [], []
+    for f in range(n_splits):
+        held = q_fold == f
+        if not held.any():
+            continue
+        w, _ = tune_weights(norm[~held], truth[t_fold != f], model_ids, n_random=n_random, seed=seed, k=k)
+        parts.append(fuse(norm[held], w))
+        weights.append(w)
+    return pd.concat(parts).sort_index(), weights
