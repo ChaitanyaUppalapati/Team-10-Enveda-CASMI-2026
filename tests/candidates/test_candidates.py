@@ -1,5 +1,7 @@
 """Tests for the candidate pool, adduct-aware lookup and coverage audit. Owner: Member 4."""
 
+import importlib.util
+
 import pandas as pd
 import pytest
 
@@ -16,16 +18,24 @@ ASPIRIN = "CC(=O)Oc1ccccc1C(=O)O"
 ASPIRIN_KEY = "BSYNRYMUTXBXSQ"
 GLUCOSE = "OCC1OC(O)C(O)C(O)C1O"
 
+# RDKit is an optional extra (``chem``) and CI installs only ``dev``, so tests that need it skip there.
+needs_rdkit = pytest.mark.skipif(importlib.util.find_spec("rdkit") is None, reason="requires the chem extra (rdkit)")
+
 
 def _pool() -> pd.DataFrame:
-    return build_pool_from_smiles([CAFFEINE, ASPIRIN, GLUCOSE])
-
-
-def build_pool_from_smiles(smiles):
-    return standardize_many(smiles, mass_range=(100.0, 1500.0))
+    """Hand-built pool (no RDKit needed): caffeine, aspirin, glucose."""
+    return pd.DataFrame(
+        {
+            "inchikey14": [CAFFEINE_KEY, ASPIRIN_KEY, "WQZGKKKJIJFFOK"],
+            "smiles": [CAFFEINE, ASPIRIN, GLUCOSE],
+            "formula": ["C8H10N4O2", "C9H8O4", "C6H12O6"],
+            "monoisotopic_mass": [CAFFEINE_MASS, 180.042259, 180.063388],
+        }
+    )
 
 
 # ---------- standardisation ----------
+@needs_rdkit
 def test_standardize_known_molecule():
     key, smiles, formula, mass = standardize_smiles(CAFFEINE)
     assert key == CAFFEINE_KEY
@@ -33,22 +43,26 @@ def test_standardize_known_molecule():
     assert mass == pytest.approx(CAFFEINE_MASS, abs=1e-5)
 
 
+@needs_rdkit
 def test_standardize_keeps_largest_fragment_of_a_salt():
     sodium_salt = "CC(=O)Oc1ccccc1C(=O)[O-].[Na+]"
     assert standardize_smiles(sodium_salt)[0] == standardize_smiles("CC(=O)Oc1ccccc1C(=O)[O-]")[0]
 
 
+@needs_rdkit
 @pytest.mark.parametrize("bad", ["not a smiles", "", "C"])  # unparsable, empty, below mass range
 def test_standardize_rejects_unusable_input(bad):
     assert standardize_smiles(bad) is None
 
 
+@needs_rdkit
 def test_standardize_many_dedupes_and_has_pool_columns():
-    pool = build_pool_from_smiles([CAFFEINE, CAFFEINE, "bogus", None])
+    pool = standardize_many([CAFFEINE, CAFFEINE, "bogus", None])
     assert list(pool.columns) == list(POOL_COLUMNS)
     assert pool["inchikey14"].tolist() == [CAFFEINE_KEY]
 
 
+@needs_rdkit
 def test_parallel_standardisation_matches_serial():
     smiles = [CAFFEINE, ASPIRIN, GLUCOSE, "bogus"] * 3
     serial = standardize_many(smiles, workers=1, chunk_size=2)
@@ -156,6 +170,7 @@ def test_find_smiles_column_prefers_known_names():
         find_smiles_column(["id", "name"])
 
 
+@needs_rdkit
 def test_build_and_load_round_trip(tmp_path):
     raw = tmp_path / "raw.csv"
     pd.DataFrame({"id": [1, 2, 3], "canonical_smiles": [CAFFEINE, ASPIRIN, "bogus"]}).to_csv(raw, index=False)
