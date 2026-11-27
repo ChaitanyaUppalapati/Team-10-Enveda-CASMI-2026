@@ -1,0 +1,9 @@
+date: 2026-11-25
+member: 7
+model_id: spectra_pooling.arch1_attention_pooling
+version: v5
+change: "+ every PubChem structure in each molecule's 10 ppm window (pool 10.5M), fragment-formula filter, tuned priors"
+val_mrr: null               # not evaluated on Member 5's frozen split
+lb_score: 0.236
+submitted: true
+notes: "FAILED APPROACH: LB 0.247 -> 0.236. EXPLORATORY casmi-split-v1: gated B2 0.620 (cross-fitted 0.609), median window 7,269 candidates. More candidates added look-alikes that outranked the answers. Run: 153 min."

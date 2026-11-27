@@ -144,3 +144,76 @@ def test_gate_switches_only_above_tau():
     out = gate(model, alt, {"a": 0.9, "b": 0.1}, tau=0.5)
     assert out == {"a": [9, 8], "b": [3, 4]}
     assert gate(model, alt, {"a": 0.9}, tau=float("inf")) == model
+
+
+def test_dedupe_official_merges_tautomers():
+    pytest.importorskip("rdkit")
+    from common.candidates import dedupe_official
+
+    pool = pd.DataFrame({"smiles": ["Oc1ccccn1", "O=c1cccc[nH]1", "CCO", "CCN", "CCC"]})
+    assert dedupe_official({"m": [0, 1, 2, 3, 4]}, pool, k=3, log=lambda m: None) == {"m": [0, 2, 3]}
+
+
+def test_consensus_mass_ignores_one_off_adduct():
+    from common.candidates import consensus_mass
+
+    # three spectra agree; one is 18 Da off. The median of four would sit between the groups.
+    masses = [300.1000, 300.1001, 300.0999, 282.0894]
+    assert abs(consensus_mass(masses) - 300.1000) < 1e-6
+    # two agreeing spectra and two unrelated ones: the agreeing pair wins
+    assert abs(consensus_mass([300.1000, 300.1001, 282.0894, 322.0820]) - 300.10005) < 1e-6
+
+
+def test_fragment_explanation_separates_formulas():
+    from common.formula import explained_fraction, has_elements, molecule_peaks, parse_formula
+
+    assert parse_formula("C10H15ClN2") == {"C": 10, "H": 15, "Cl": 1, "N": 2}
+    assert parse_formula("C9H18NO4+") is None and parse_formula("C2H6Hg") is None
+    assert has_elements("C7H5F3O") and not has_elements("C6H12O6")
+    # glucose [M+H-H2O]+ = C6H11O5+ at 163.0601 and C6H9O4+ at 145.0495
+    mz = np.array([[163.0601, 145.0495, 0.0]])
+    inten = np.array([[1.0, 0.5, 0.0]])
+    peaks = molecule_peaks([0], mz, inten, ["[M+H]+"], ["positive"])
+    assert explained_fraction("C6H12O6", peaks) == pytest.approx(1.0)
+    assert explained_fraction("C13H20", peaks) == pytest.approx(0.0)  # hydrocarbon: no oxygen to explain them
+
+
+def test_rerank_structure_features():
+    pytest.importorskip("rdkit")
+    from common.rerank import LOSSES, bond_explanation, candidate_structure, spectrum_evidence
+
+    names = list(LOSSES)
+    groups = {s: [names[i] for i, v in enumerate(candidate_structure(s)[2]) if v]
+              for s in ("OCC1OC(O)C(O)C(O)C1O", "CC1OC(O)C(O)C(O)C1O", "OC1COC(O)C(O)C1O")}
+    assert "hexose" in groups["OCC1OC(O)C(O)C(O)C1O"] and "dhex" in groups["CC1OC(O)C(O)C(O)C1O"]
+    assert "pentose" in groups["OC1COC(O)C(O)C1O"]
+    # phenyl glucoside [M+H]+: aglycone ion (phenol + H) and sugar oxonium ion; the sugar loss is seen
+    mz, it = np.array([[95.0491, 163.0601]]), np.array([[1.0, 0.6]])
+    ev = spectrum_evidence([0], mz, it, np.array([257.1020]), ["[M+H]+"], ["positive"])
+    assert ev["losses"][names.index("hexose")] == 1
+    assert bond_explanation(candidate_structure("OCC1OC(Oc2ccccc2)C(O)C(O)C1O"), ev)[0] == pytest.approx(1.0)
+    assert bond_explanation(candidate_structure("CCCCCCCCCCCC"), ev)[0] == pytest.approx(0.0)
+
+
+def test_merge_channel_slots_and_override():
+    from common.candidates import documentation_prior, merge_channel
+
+    main, ch = list(range(10)), [100, 101, 102]
+    assert merge_channel(main, ch, slots=(2, 4), n=6) == [0, 100, 1, 101, 2, 3]
+    assert merge_channel(main, ch, slots=(3,), override=True, n=5) == [100, 0, 101, 1, 2]
+    assert merge_channel(main, ch, n=3) == [0, 1, 2]
+    assert documentation_prior(0, 0) == 0.0 and documentation_prior(np.e - 1, 0) == pytest.approx(1.0)
+
+
+def test_doc_features_rank_isomers_by_documentation():
+    from common.rerank import DOC_FEATURES, doc_features
+
+    keys = ["A", "B", "C", "D"]
+    formulas = ["C6H12O6", "C6H12O6", "C7H8O", "C6H12O6"]
+    t = doc_features(keys, formulas, {"A": 5.0, "B": 2.0, "C": 7.0})
+    assert list(t.columns) == DOC_FEATURES
+    assert t.doc_known.tolist() == [1, 1, 1, 0]
+    assert t.doc_rank.tolist() == [2, 3, 1, 5]  # unknown goes below every known candidate
+    assert t.doc_gap.tolist()[:3] == [-2.0, -5.0, 0.0]
+    assert t.doc_iso_gap.tolist()[:3] == [0.0, -3.0, 0.0]  # B loses to its isomer A, C has no isomer
+    assert np.isnan(t.doc_pop[3]) and np.isnan(t.doc_iso_gap[3])

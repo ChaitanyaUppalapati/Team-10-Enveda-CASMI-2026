@@ -1,0 +1,9 @@
+date: 2026-11-27
+member: 7
+model_id: spectra_pooling.arch3_contrastive_transformer
+version: v9
+change: "Architecture 3: peak-token transformer + jointly trained gated attention pooling + molecule encoder, CLIP-style InfoNCE with 31 same-mass hard negatives; fused with the MLP first stage and fed to the reranker; test-only penalty for structures from the synthetic enveda-180 library"
+val_mrr: null               # not evaluated on Member 5's frozen split
+lb_score: 0.326
+submitted: true
+notes: "EXPLORATORY casmi-split-v1: first stage transformer 0.773 vs MLP 0.729 (isomer-heavy 0.748 vs 0.708), fused 0.798, reranked 0.868. The penalty changed 317 of 400 test top-1 picks. Run: 138 min."

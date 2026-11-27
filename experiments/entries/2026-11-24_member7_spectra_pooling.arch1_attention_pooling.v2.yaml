@@ -1,0 +1,9 @@
+date: 2026-11-24
+member: 7
+model_id: spectra_pooling.arch1_attention_pooling
+version: v2
+change: "+ COCONUT and PubChemLite candidates (pool 1.10M), gated fusion with B2 library search"
+val_mrr: null               # not evaluated on Member 5's frozen split
+lb_score: 0.247
+submitted: true
+notes: "EXPLORATORY casmi-split-v1: gated B2 0.729 (cross-fitted), tuned mean 0.712, attention 0.698, mean 0.679. Submitted: gated B2. Run: 60 min."
