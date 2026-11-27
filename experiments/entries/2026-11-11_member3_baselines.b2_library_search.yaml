@@ -1,0 +1,15 @@
+# Member 3 Colab run. val_mrr stays empty until the frozen split is evaluated.
+date: 2026-11-11
+member: 3
+model_id: baselines.b2_library_search
+version: v1
+change: "modified cosine, mean pooling, 10 ppm"
+val_mrr: null
+lb_score: 0.146
+submitted: true
+exploratory_split: casmi-split-v1
+exploratory_val_mrr: 0.4837
+notes: >-
+  Exploratory split casmi-split-v1 (Member 3's own), 2912 validation molecules.
+  Per-class MRR@25: class 1 0.8628, class 2 0.1046, np proxy 0.5585.
+  Runtime 14.39 min on Colab CPU. Run folder baseline_library_search_20261111_070818.

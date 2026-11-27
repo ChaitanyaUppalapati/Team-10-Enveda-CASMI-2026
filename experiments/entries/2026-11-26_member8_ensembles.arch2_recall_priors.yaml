@@ -1,0 +1,9 @@
+date: 2026-11-26
+member: 8
+model_id: ensembles.arch2_recall_priors
+version: v3
+change: "PubChem tier shortlists (60 by MLP + 60 by MLP x documentation prior per molecule, pool 1.1M -> 1.35M); pop and np priors as fusion sources; gated z-score fusion tuned on unknown-structure validation copies; uniqueness rule"
+val_mrr: null               # not yet evaluated on Member 5's frozen split (data/splits/)
+lb_score: 0.224             # public LB, scored 2026-11-26
+submitted: true
+notes: "EXPLORATORY, not the frozen split, on Member 3's casmi-split-v1 (2-fold cross-fitted): objective 0.538, unknown-structure MRR@25 0.438 (class 2 0.378, np proxy 0.734), standard balanced 0.499 (class 1 0.598, class 2 0.401). arch1 v2 on the same 1.35M pool: objective 0.360. Run: models/ensembles/arch2_recall_priors/notebooks/kaggle_v3_recall_priors_run.ipynb (T4, 71 min)."

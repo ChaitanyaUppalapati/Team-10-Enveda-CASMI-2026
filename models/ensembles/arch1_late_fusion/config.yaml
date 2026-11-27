@@ -1,9 +1,8 @@
 # Owner: Member 8
 model_id: ensembles.arch1_late_fusion
 seed: 2026
-inputs: []  # model_ids whose scores this model consumes
-
-data:
-  preprocess: default
-model: {}
-train: {}
+# model_ids whose outputs/scores/<id>/<split>.parquet are fused. Fill in as members publish.
+inputs: []          # e.g. [baselines.b2_library_search, fingerprint_mlp.arch1_mlp, spectrum_cnn.arch1_cnn1d]
+truth: null         # parquet/CSV (query_id, inchikey14) of the frozen val labels (Member 5)
+method: rrf         # rrf | minmax | zscore (per-query normalisation)
+n_random: 200       # random simplex weight draws on top of single-model and equal-weight starts
