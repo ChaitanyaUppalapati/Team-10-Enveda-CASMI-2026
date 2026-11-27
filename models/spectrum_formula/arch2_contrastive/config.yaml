@@ -2,7 +2,43 @@
 model_id: spectrum_formula.arch2_contrastive
 seed: 2026
 
-data:
-  preprocess: default
-model: {}
-train: {}
+data:                           # team protocol: Member 3's split, pool, ranking helpers and scorer
+  data_dir: null                # folder with train.parquet; null -> configured raw_dir, then find_data_dir
+  per_structure: 4
+  n_val: 3000
+  max_query_spectra: 16
+  bin_width: 0.5                # Da per spectrum bin
+  neutral_loss: true            # second block of bins: precursor m/z minus peak m/z
+  external_pools: []            # extra candidate tables under candidates_dir, e.g. [coconut]
+  radius: 2
+
+model:                          # n_bits is casmi_pipeline.FP_BITS (2048)
+  d: 512                        # embedding size
+  spec_dim: 1024
+  meta_dim: 64
+  hidden: 2048
+  mol_hidden: 2048
+  dropout: 0.2
+  temperature: 0.07             # initial; learned
+
+train:
+  epochs: 12
+  batch_size: 256
+  lr: 0.001
+  weight_decay: 0.0001
+  hard_negatives: 32            # same-mass pool structures per spectrum
+  hard_ppm: 10.0
+  amp: true                     # half precision on CUDA (ignored on MPS/CPU)
+  device: auto
+
+predict:
+  ppm: 10.0
+  prior:                        # documentation prior from PubChemLite counts (off when weight is 0)
+    mode: pubmed                # member | pubmed | patent | both | annotations
+    weight: 0.0                 # logit-space weight; 0.4-0.8 looked best on validation
+    topk: 25                    # only reorder the model's top-k candidates (null = whole window)
+    table: pubchemlite_counts.parquet
+  retrieval:                    # analog-spectrum retrieval (off when weight is 0)
+    weight: 0.0                 # logit-space weight of the Tanimoto-to-consensus term; 20 looked best on validation
+    k: 20                       # nearest library spectra per query spectrum
+    beta: 30.0                  # softmax sharpness over neighbour similarities

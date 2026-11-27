@@ -1,0 +1,15 @@
+# Member 4: arch1 on the team protocol (Member 3's split, pool and scorer).
+date: 2026-11-26
+member: 4
+model_id: spectrum_formula.arch1_dual_branch
+version: v2
+change: "re-run on the team protocol: Member 3 split/pool/rank/evaluate, best epoch by balanced MRR@25; pool = training structures only"
+val_mrr: 0.6014
+lb_score: null
+submitted: false
+notes: >-
+  Balanced MRR@25 0.6014 (class 1 0.6011, class 2 0.6017, np proxy 0.5231), 2,912 validation molecules;
+  top1 0.467, top5 0.770, top25 0.929. 884,041 training spectra (4 per structure), 12 epochs, 1 Da bins,
+  796 s on Apple MPS, seed 2026. Still improving at epoch 12 (0.5998 -> 0.6014), so under-trained.
+  Below Member 3's Residual MLP (0.7141) and peak-set transformer (0.6805) on the same protocol.
+  No leaderboard submission yet. The earlier v1 entry used a provisional hash split and is not comparable.

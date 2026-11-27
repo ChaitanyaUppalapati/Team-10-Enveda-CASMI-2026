@@ -1,0 +1,14 @@
+# Member 4: arch1 xl (submission 3).
+date: 2026-11-26
+member: 4
+model_id: spectrum_formula.arch1_dual_branch
+version: v5
+change: "much wider network (spec 2048 / hidden 4096), 24 epochs; otherwise as v4"
+val_mrr: 0.7470
+lb_score: 0.211
+submitted: true
+notes: >-
+  Team protocol, pool = training structures + COCONUT. Model only 0.7355; gated 0.7470 (cross-fitted 0.747; tau 0.978,
+  only 9% of val molecules gated). Gated class 1 0.800, class 2 0.694, np proxy 0.5898. 61.8 min on 2x T4. Kaggle ref 58975625.
+  Validation improved by 0.060 over v4 but the public LB did not (0.211 vs 0.217, within sampling noise on about 400
+  hidden molecules). Half-data local run (pool = training structures): xl 0.7534 vs wl 0.7091 vs Member 3 Residual MLP 0.7141 (full data).

@@ -2,7 +2,29 @@
 model_id: spectrum_formula.arch1_dual_branch
 seed: 2026
 
-data:
-  preprocess: default
-model: {}
-train: {}
+data:                           # team protocol: Member 3's split, pool, ranking and scorer
+  data_dir: null                # folder with train.parquet; null -> casmi_pipeline.find_data_dir
+  per_structure: 4              # max training spectra per structure (team default is 8)
+  n_val: 3000                   # validation molecules (np proxy kept, rest balanced over classes 1 and 2)
+  max_query_spectra: 16
+  bin_width: 1.0                # Da per spectrum bin (input size = 1200 / bin_width)
+  neutral_loss: false           # add a second block of bins for precursor m/z minus peak m/z
+  external_pools: []            # extra candidate tables under candidates_dir, e.g. [coconut]
+  radius: 2
+
+model:                          # n_bits is casmi_pipeline.FP_BITS (2048)
+  spec_dim: 512
+  meta_dim: 64
+  hidden: 1024
+  dropout: 0.2
+
+train:
+  epochs: 12
+  batch_size: 256
+  lr: 0.001
+  weight_decay: 0.0001
+  formula_loss_weight: 0.1      # auxiliary element-count head
+  device: auto                  # auto -> cuda, then mps, then cpu
+
+predict:
+  ppm: 10.0                     # mass window; the team protocol default
