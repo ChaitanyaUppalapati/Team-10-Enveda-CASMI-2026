@@ -1,0 +1,9 @@
+date: 2026-11-26
+member: 7
+model_id: spectra_pooling.arch2_lineup_reranker
+version: v8
+change: "+ PubChem documentation prior (SIDs + PMIDs) as reranker features and a PubChem candidate channel; line-ups of 100; 3-seed reranker"
+val_mrr: null               # not evaluated on Member 5's frozen split
+lb_score: 0.276
+submitted: true
+notes: "FAILED APPROACH: validation 0.842 -> 0.879 (NP examples 0.694 -> 0.837) but LB 0.281 -> 0.276. Validation answers are well-documented library standards, so the prior rewarded fame; the hidden answers are less documented (Member 8's arch2 saw the same). Run: 131 min."

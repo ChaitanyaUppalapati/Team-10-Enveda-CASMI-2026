@@ -134,12 +134,13 @@ def batched_forward(pool, sets, H, device, chunk=1024):
 
 
 def train_pool(pool, H, groups, train_keys, target_fp, device, H_val, val_sets, val_bits,
-               epochs=20, batch=256, lr=1e-3, seed=0, log=print, ckpt=None):
+               epochs=20, batch=256, lr=1e-3, seed=0, log=print, ckpt=None, score_fn=None):
     """Train one pooling head on test-like random subsets of each training molecule's spectra.
 
     H: train embeddings (CPU). target_fp: dict key -> packed fingerprint (uint8).
     H_val, val_sets, val_bits: fixed validation sets and their (n_sets, F) 0/1 targets.
-    Keeps the epoch with the lowest validation BCE.
+    Keeps the epoch with the lowest validation BCE, or, with score_fn (validation probabilities ->
+    MRR@25, higher is better), the epoch with the best ranking. Lower BCE does not imply better ranking.
     """
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
@@ -167,9 +168,14 @@ def train_pool(pool, H, groups, train_keys, target_fp, device, H_val, val_sets, 
         with torch.no_grad():
             logits, _ = batched_forward(pool, val_sets, H_val, device)
             vl = float(F.binary_cross_entropy_with_logits(logits, val_bits.to(device)))
-        hist.append({"epoch": ep + 1, "train_bce": total / max(n, 1), "val_bce": vl})
-        log(f"  epoch {ep + 1}: train {total / max(n, 1):.4f}  val {vl:.4f}")
-        if vl < best:
+        row = {"epoch": ep + 1, "train_bce": total / max(n, 1), "val_bce": vl}
+        crit = vl
+        if score_fn is not None:
+            row["val_mrr"] = float(score_fn(torch.sigmoid(logits.float()).cpu().numpy()))
+            crit = -row["val_mrr"]
+        hist.append(row)
+        log(f"  epoch {ep + 1}: train {row['train_bce']:.4f}  val {vl:.4f}  mrr {row.get('val_mrr', float('nan')):.4f}")
+        if crit < best:
             best, best_state = vl, {k: v.detach().cpu().clone() for k, v in pool.state_dict().items()}
     pool.load_state_dict(best_state)
     if ckpt:
@@ -180,23 +186,45 @@ def train_pool(pool, H, groups, train_keys, target_fp, device, H_val, val_sets, 
 # ---------- ranking with Member 3's pool and evaluation ----------
 
 
-def rank_pooled(cp, pool, pool_fp_packed, masses, probs, ppm=10.0):
+def window_similarity(cp, pool, pool_fp_packed, masses, probs, ppm=10.0):
+    """{molecule: (window indices, soft Tanimoto)}: the expensive part of ranking, computed once."""
+    pool_mass = pool.mass.to_numpy()
+    out = {}
+    for (mol, mass), p in zip(masses.items(), probs, strict=True):
+        idx = cp.window_indices(pool_mass, mass, ppm)
+        tanimoto = np.zeros(0, dtype=np.float32)
+        if len(idx):
+            bits = np.unpackbits(pool_fp_packed[idx], axis=1).astype(np.float32)
+            overlap = bits @ p
+            tanimoto = overlap / (p.sum() + bits.sum(axis=1) - overlap + 1e-8)
+        out[mol] = (idx, tanimoto)
+    return out
+
+
+def rank_from_similarity(cp, pool, sims, masses, k=25, prior=None, extra=None):
+    """Rank each window by similarity + optional per-structure prior + optional per-molecule extra term."""
+    pool_mass = pool.mass.to_numpy()
+    rankings = {}
+    for mol, mass in masses.items():
+        idx, score = sims[mol]
+        if len(idx):
+            if prior is not None:  # per-structure bonus, e.g. for structures in a curated database
+                score = score + prior[idx]
+            if extra is not None:  # per-molecule term over the window, e.g. fragment-formula explanation
+                score = score + extra(mol, idx)
+            idx = idx[np.argsort(-score, kind="stable")]
+        rankings[mol] = cp.fill_to_k(idx, pool_mass, mass, k=k)
+    return rankings
+
+
+def rank_pooled(cp, pool, pool_fp_packed, masses, probs, ppm=10.0, k=25, prior=None, extra=None):
     """Rank candidates for each molecule by soft Tanimoto to ONE pooled probability vector.
 
     Same as ``cp.rank_by_fingerprint`` except the pooling has already happened.
     masses: Series molecule_id -> neutral mass. probs: (n_molecules, F) in the same order.
     """
-    pool_mass = pool.mass.to_numpy()
-    rankings = {}
-    for (mol, mass), p in zip(masses.items(), probs, strict=True):
-        idx = cp.window_indices(pool_mass, mass, ppm)
-        if len(idx):
-            bits = np.unpackbits(pool_fp_packed[idx], axis=1).astype(np.float32)
-            overlap = bits @ p
-            tanimoto = overlap / (p.sum() + bits.sum(axis=1) - overlap + 1e-8)
-            idx = idx[np.argsort(-tanimoto, kind="stable")]
-        rankings[mol] = cp.fill_to_k(idx, pool_mass, mass)
-    return rankings
+    sims = window_similarity(cp, pool, pool_fp_packed, masses, probs, ppm)
+    return rank_from_similarity(cp, pool, sims, masses, k=k, prior=prior, extra=extra)
 
 
 def rrf_fuse(rank_lists, weights=None, k=60, top=25):

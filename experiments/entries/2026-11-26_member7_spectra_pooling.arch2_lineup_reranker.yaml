@@ -1,0 +1,9 @@
+date: 2026-11-26
+member: 7
+model_id: spectra_pooling.arch2_lineup_reranker
+version: v7
+change: "Architecture 2: LightGBM LambdaRank reranker over each molecule's top-50 line-up (fingerprint likelihood, exact-mass fragment and neutral-loss evidence, bond-cleavage fragments, library match)"
+val_mrr: null               # not evaluated on Member 5's frozen split
+lb_score: 0.281
+submitted: true
+notes: "EXPLORATORY casmi-split-v1: reranked 0.842 (out-of-fold) vs stage 1 0.732; loss study: 69% of the remaining loss is a same-formula isomer ranked above the answer. Run: 94 min (PubChem channel skipped: dataset not attached)."

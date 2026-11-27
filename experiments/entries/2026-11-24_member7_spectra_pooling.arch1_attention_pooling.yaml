@@ -1,0 +1,9 @@
+date: 2026-11-24
+member: 7
+model_id: spectra_pooling.arch1_attention_pooling
+version: v1
+change: "ResidualMLP (Member 3) per spectrum, then pooling of a molecule's spectra: mean, tuned mean, gated attention; candidates = 275,810 training structures"
+val_mrr: null               # not evaluated on Member 5's frozen split
+lb_score: 0.145
+submitted: true
+notes: "EXPLORATORY on Member 3's casmi-split-v1 (2,912 molecules): balanced MRR@25 tuned mean 0.777, attention 0.766, mean 0.751, B2 0.488 (answer always in the pool here). Submitted: tuned mean. Predicted LB 0.141 from 19% candidate coverage. Run: Kaggle 2x T4, 52 min."

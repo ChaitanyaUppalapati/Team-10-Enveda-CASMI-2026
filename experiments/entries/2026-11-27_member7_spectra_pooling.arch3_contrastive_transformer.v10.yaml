@@ -1,0 +1,9 @@
+date: 2026-11-27
+member: 7
+model_id: spectra_pooling.arch3_contrastive_transformer
+version: v10
+change: "Two transformer seeds (one per T4) averaged; enveda-180 molecules drawn at 50% per epoch; MLP/transformer fusion weight tuned"
+val_mrr: null               # not evaluated on Member 5's frozen split
+lb_score: 0.343
+submitted: true
+notes: "EXPLORATORY casmi-split-v1: transformer 0.796 (NP examples 0.625, v9 0.564), fused 0.825, reranked 0.874 (NP examples 0.734). Best LB of the team. Run: 148 min."
