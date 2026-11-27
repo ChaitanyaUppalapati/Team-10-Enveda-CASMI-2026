@@ -152,7 +152,7 @@ def test_end_to_end_cli(tmp_path, monkeypatch):
 
     variants = (
         ("arch1_late_fusion", {"n_random": 30}),
-        ("arch2_stacked_meta", {"meta": "logreg", "n_splits": 3}),
+        ("arch2_recall_priors", {"meta": "logreg", "n_splits": 3}),
     )
     for arch, extra in variants:
         cfg = tmp_path / f"{arch}.yaml"

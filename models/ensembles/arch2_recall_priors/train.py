@@ -1,4 +1,4 @@
-"""Ensemble training entry point. Owner: Member 8."""
+"""Score-file mode of arch2: train the stacked meta-learner on members' score files. Owner: Member 8."""
 
 from __future__ import annotations
 

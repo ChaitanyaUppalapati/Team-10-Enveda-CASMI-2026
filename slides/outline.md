@@ -13,7 +13,7 @@ Fill the speaker column once presentation order is agreed. Final slides are due 
 | 6 | Validation | Frozen structure-level split; per-class reporting; why proxies mislead | - | |
 | 7 | Baselines | B0 to B3, B2 is the reference for improvement | F4 | |
 | 8 | Models | MLP, CNN, residual MLP, dual-branch, transformer, contrastive | F5 | |
-| 9 | Ensembles | Late fusion and stacked meta-learner: what they add over the best single model | F6, F7 | M8 |
+| 9 | Ensembles | Late fusion (arch1) and PubChem recall + priors (arch2): what they add, and why LB stays far below validation | F6, F7 | M8 |
 | 10 | Results | Score over time; improvement vs B2 with intervals; leaderboard evidence | F8, F9, F14 | |
 | 11 | Ablations | What mattered: reweighting, pooling, pool expansion | F10, F11 | |
 | 12 | Errors | Where we fail and why | F12 | |

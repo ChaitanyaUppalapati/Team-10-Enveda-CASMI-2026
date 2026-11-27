@@ -30,7 +30,7 @@ Given MS/MS spectra, rank candidate molecular structures. Scoring is **MRR@25**,
 | `models/rerankers/` | LightGBM LambdaRank; neural pairwise reranker | M5 |
 | `models/compact/` | Distilled student; quantized predictor | M6 |
 | `models/spectra_pooling/` | Attention pooling; DeepSets pooling over a molecule's spectra | M7 |
-| `models/ensembles/` | Late fusion; stacked meta-learner | M8 |
+| `models/ensembles/` | Late fusion; PubChem recall + priors (with a stacked meta-learner) | M8 |
 | `kaggle/` | Offline inference notebook + Kaggle Dataset builders | M6 (COCONUT: M4) |
 | `notebooks/` | Data loading and EDA notebooks | M2 |
 | `experiments/` | One YAML per run, built into `LOG.md`; leaderboard screenshots | all / M1 / M6 |

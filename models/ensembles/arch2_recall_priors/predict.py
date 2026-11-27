@@ -1,4 +1,4 @@
-"""Ensemble prediction: writes CandidateScores for a split. Owner: Member 8."""
+"""Score-file mode of arch2: stacked meta-learner CandidateScores for a split. Owner: Member 8."""
 
 from __future__ import annotations
 

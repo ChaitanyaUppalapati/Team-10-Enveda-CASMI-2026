@@ -5,7 +5,7 @@
 | Folder | Architecture | Schedule |
 |--------|--------------|----------|
 | [`arch1_late_fusion`](arch1_late_fusion/) | Late-fusion ensemble (spectral + fingerprint scores) | week 2 |
-| [`arch2_stacked_meta`](arch2_stacked_meta/) | Stacked meta-learner over all models | week 3 |
+| [`arch2_recall_priors`](arch2_recall_priors/) | PubChem-scale recall + documentation / natural-product priors (v3); score-file mode: stacked meta-learner | week 3 |
 
 Shared code between the two architectures lives in `ensemble_common/` (named so it does not
 clash with the other members' `common/` packages): `inputs.py` (align score files),

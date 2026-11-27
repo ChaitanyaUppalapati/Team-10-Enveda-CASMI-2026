@@ -1,5 +1,6 @@
 # Owner: Member 8
-model_id: ensembles.arch2_stacked_meta
+model_id: ensembles.arch2_recall_priors
+# Score-file mode only (the stacked meta-learner); the v3 pipeline runs in notebooks/ on Kaggle.
 seed: 2026
 inputs: []          # every model_id to stack (all members' score files)
 truth: null         # parquet/CSV (query_id, inchikey14) of the frozen val labels (Member 5)

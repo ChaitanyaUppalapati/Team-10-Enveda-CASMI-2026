@@ -10,7 +10,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-sys.path.insert(0, str(ROOT / "baselines" / "b2_library_search"))
+sys.path.insert(0, str(ROOT / "models" / "spectrum_encoders" / "common"))
 
 pytest.importorskip("rdkit")
 import casmi_pipeline as cp  # noqa: E402

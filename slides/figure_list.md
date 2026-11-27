@@ -10,7 +10,7 @@
 | F4 | MRR@25 per baseline (B0, B1, B2, B3) on the frozen val split | `experiments/LOG.md` | M1 / M5 | 7 | todo |
 | F5 | Per-model val MRR@25 bar chart, grouped by class (class 1 / 2 / np proxy) | each model README + `casmi.evaluation.per_class` | M5 | 8 | todo |
 | F6 | Late-fusion weight chart: tuned weight per input model + single-model vs fused MRR | `outputs/models/ensembles.arch1_late_fusion/fusion.json` | M8 | 9 | todo |
-| F7 | Stacked meta-learner: out-of-fold MRR vs best single model and late fusion | `outputs/models/ensembles.arch2_stacked_meta/stack.json` | M8 | 9 | todo |
+| F7 | Recall + priors (arch2, v3): hidden-like validation vs v2 fusion, LB 0.200 -> 0.224 | `slides/figures/m8/arch2_validation_report.png` | M8 | 9 | done |
 | F8 | Score over time: val MRR and leaderboard score by submission date, B2 baseline line | `experiments/score_over_time.png` (M1) | M1 | 10 | todo |
 | F9 | Improvement vs B2 with bootstrap 95% intervals | `casmi.evaluation.bootstrap` (M5) | M5 | 10 | todo |
 | F10 | Ablation table: library reweighting, pooling choice, PubChem pool | `docs/ablations/README.md` | M5 | 11 | todo |
