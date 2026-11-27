@@ -1,14 +1,10 @@
 """MRR@25 scorer tests with hand-computed answers. Owner: Member 5.
-
-Marked xfail until casmi.evaluation.scorer is implemented; remove the marker then.
 """
 
 import pandas as pd
 import pytest
 
 from casmi.evaluation.scorer import mrr_at_k
-
-pytestmark = pytest.mark.xfail(raises=NotImplementedError, reason="scorer not implemented yet")
 
 A, B, C = "BSYNRYMUTXBXSQ", "RZVAJINKPMORJF", "RYYVLZVUVIJVGH"
 
