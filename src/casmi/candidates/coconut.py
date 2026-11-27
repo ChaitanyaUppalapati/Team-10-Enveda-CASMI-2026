@@ -7,9 +7,15 @@ Output table columns: inchikey14, smiles, formula, monoisotopic_mass.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pandas as pd
 
+from .pool import load_pool
 
-def load_coconut() -> pd.DataFrame:
+COCONUT_FILE = "coconut.parquet"
+
+
+def load_coconut(candidates_dir: str | Path | None = None) -> pd.DataFrame:
     """Load the COCONUT candidate table from ``candidates_dir``."""
-    raise NotImplementedError("TODO(Member 4): load COCONUT snapshot")
+    return load_pool(COCONUT_FILE, candidates_dir)

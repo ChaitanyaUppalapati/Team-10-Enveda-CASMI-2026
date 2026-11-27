@@ -1,13 +1,18 @@
-"""Late-fusion ensemble (spectral + fingerprint scores): training entry point. Owner: Member 8."""
+"""Ensemble training entry point. Owner: Member 8."""
 
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
-from casmi.utils import load_config, set_seed
-
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parents[2] / "src"))
+sys.path.insert(0, str(HERE.parent))
+
+from ensemble_common.runner import train_fusion  # noqa: E402
+
+from casmi.utils import load_config, set_seed  # noqa: E402
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -16,7 +21,7 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     cfg = load_config(args.config)
     set_seed(cfg.get("seed", 2026))
-    raise NotImplementedError("TODO(Member 8): train ensembles.arch1_late_fusion")
+    print(train_fusion(cfg))
 
 
 if __name__ == "__main__":

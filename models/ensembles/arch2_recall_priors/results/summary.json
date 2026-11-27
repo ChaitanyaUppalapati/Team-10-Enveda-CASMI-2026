@@ -1,0 +1,465 @@
+{
+  "date": "2026-11-26 22:09",
+  "runtime_min": 70.8,
+  "gpu": "Tesla T4",
+  "quick": false,
+  "chosen": "v3_gated_z",
+  "chosen_params": {
+    "kind": "gated",
+    "weights": {
+      "library": 0.0153,
+      "fp_ll": 0.0266,
+      "fp_tani": 0.5385,
+      "pop": 0.3194,
+      "np": 0.1003
+    },
+    "edges": [
+      0.3146366477012634,
+      0.555855929851532
+    ],
+    "bin_weights": [
+      [
+        0.03494997814429,
+        0.12969817577235432,
+        0.42284272469178397,
+        0.24865723176465845,
+        0.1638518896269133
+      ],
+      [
+        0.03526947037884441,
+        0.1440379381934164,
+        0.4996054689228779,
+        0.251679314480765,
+        0.0694078080240963
+      ],
+      [
+        0.03526947037884441,
+        0.1440379381934164,
+        0.4996054689228779,
+        0.251679314480765,
+        0.0694078080240963
+      ],
+      [
+        0.019034557329175816,
+        0.29856468512018275,
+        0.4229652063684242,
+        0.1566004138441214,
+        0.1028351373380958
+      ]
+    ],
+    "bin_sizes": [
+      240,
+      1390,
+      1389,
+      1392
+    ],
+    "method": "z",
+    "sources": [
+      "library",
+      "fp_ll",
+      "fp_tani",
+      "pop",
+      "np"
+    ]
+  },
+  "all_params": {
+    "library": {
+      "kind": "single",
+      "source": "library"
+    },
+    "fp_ll": {
+      "kind": "single",
+      "source": "fp_ll"
+    },
+    "fp_tani": {
+      "kind": "single",
+      "source": "fp_tani"
+    },
+    "pop": {
+      "kind": "single",
+      "source": "pop"
+    },
+    "np": {
+      "kind": "single",
+      "source": "np"
+    },
+    "v2_global_z": {
+      "kind": "global",
+      "weights": {
+        "library": 0.0,
+        "fp_ll": 0.0,
+        "fp_tani": 1.0
+      },
+      "method": "z",
+      "sources": [
+        "library",
+        "fp_ll",
+        "fp_tani"
+      ]
+    },
+    "v2_gated_z": {
+      "kind": "gated",
+      "weights": {
+        "library": 0.0,
+        "fp_ll": 0.0,
+        "fp_tani": 1.0
+      },
+      "edges": [
+        0.3146366477012634,
+        0.555855929851532
+      ],
+      "bin_weights": [
+        [
+          0.3794753660097934,
+          0.20237169539798178,
+          0.4181529385922246
+        ],
+        [
+          0.025702769501779448,
+          0.40315827420125744,
+          0.5711389562969631
+        ],
+        [
+          0.025702769501779448,
+          0.40315827420125744,
+          0.5711389562969631
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "bin_sizes": [
+        240,
+        1390,
+        1389,
+        1392
+      ],
+      "method": "z",
+      "sources": [
+        "library",
+        "fp_ll",
+        "fp_tani"
+      ]
+    },
+    "v2_global_rrf": {
+      "kind": "global",
+      "weights": {
+        "library": 0.0257,
+        "fp_ll": 0.4032,
+        "fp_tani": 0.5711
+      },
+      "method": "rrf",
+      "sources": [
+        "library",
+        "fp_ll",
+        "fp_tani"
+      ]
+    },
+    "v3_global_z": {
+      "kind": "global",
+      "weights": {
+        "library": 0.0153,
+        "fp_ll": 0.0266,
+        "fp_tani": 0.5385,
+        "pop": 0.3194,
+        "np": 0.1003
+      },
+      "method": "z",
+      "sources": [
+        "library",
+        "fp_ll",
+        "fp_tani",
+        "pop",
+        "np"
+      ]
+    },
+    "v3_gated_z": {
+      "kind": "gated",
+      "weights": {
+        "library": 0.0153,
+        "fp_ll": 0.0266,
+        "fp_tani": 0.5385,
+        "pop": 0.3194,
+        "np": 0.1003
+      },
+      "edges": [
+        0.3146366477012634,
+        0.555855929851532
+      ],
+      "bin_weights": [
+        [
+          0.03494997814429,
+          0.12969817577235432,
+          0.42284272469178397,
+          0.24865723176465845,
+          0.1638518896269133
+        ],
+        [
+          0.03526947037884441,
+          0.1440379381934164,
+          0.4996054689228779,
+          0.251679314480765,
+          0.0694078080240963
+        ],
+        [
+          0.03526947037884441,
+          0.1440379381934164,
+          0.4996054689228779,
+          0.251679314480765,
+          0.0694078080240963
+        ],
+        [
+          0.019034557329175816,
+          0.29856468512018275,
+          0.4229652063684242,
+          0.1566004138441214,
+          0.1028351373380958
+        ]
+      ],
+      "bin_sizes": [
+        240,
+        1390,
+        1389,
+        1392
+      ],
+      "method": "z",
+      "sources": [
+        "library",
+        "fp_ll",
+        "fp_tani",
+        "pop",
+        "np"
+      ]
+    },
+    "v3_global_rrf": {
+      "kind": "global",
+      "weights": {
+        "library": 0.0021,
+        "fp_ll": 0.2085,
+        "fp_tani": 0.3403,
+        "pop": 0.4108,
+        "np": 0.0383
+      },
+      "method": "rrf",
+      "sources": [
+        "library",
+        "fp_ll",
+        "fp_tani",
+        "pop",
+        "np"
+      ]
+    }
+  },
+  "objective": {
+    "std_class2": 0.2,
+    "novel_np": 0.4,
+    "novel_other": 0.4
+  },
+  "uniqueness_rule": true,
+  "tier": {
+    "test_molecules": 400,
+    "val_molecules": 2912,
+    "unique_structures": 353138,
+    "added_to_pool": 250324,
+    "val_truth_in_shortlist": 0.7184,
+    "val_truth_in_external_sources": 0.409
+  },
+  "split": {
+    "molecules": 2912,
+    "class1": 1413,
+    "class2": 1499,
+    "np_proxy": 250
+  },
+  "pool": {
+    "main": 1097770,
+    "with_shortlists": 1348094,
+    "training_structures": 275810
+  },
+  "coverage": {
+    "val_standard": 0.9918,
+    "val_unknown_structure": 0.8043,
+    "test": {
+      "molecules": 400,
+      "candidates_median": 218.0,
+      "candidates_max": 748,
+      "no_candidates": 0,
+      "with_library_evidence": 1.0,
+      "from_pubchem_channel": 1.0
+    },
+    "test_b1_fallback": 0
+  },
+  "validation": {
+    "v3_gated_z": {
+      "objective": 0.5378,
+      "novel all": 0.4382,
+      "novel np": 0.7339,
+      "balanced": 0.4994,
+      "class 1": 0.598,
+      "class 2": 0.4007,
+      "np proxy": 0.7658,
+      "top1": 0.3865,
+      "in_sample": 0.553
+    },
+    "v3_global_z": {
+      "objective": 0.5354,
+      "novel all": 0.4318,
+      "novel np": 0.7401,
+      "balanced": 0.4902,
+      "class 1": 0.5891,
+      "class 2": 0.3912,
+      "np proxy": 0.7716,
+      "top1": 0.3753,
+      "in_sample": 0.5469
+    },
+    "v3_global_rrf": {
+      "objective": 0.4364,
+      "novel all": 0.3625,
+      "novel np": 0.601,
+      "balanced": 0.3727,
+      "class 1": 0.4455,
+      "class 2": 0.2999,
+      "np proxy": 0.6017,
+      "top1": 0.248,
+      "in_sample": 0.4364
+    },
+    "pop": {
+      "objective": 0.3828,
+      "novel all": 0.2118,
+      "novel np": 0.7429,
+      "balanced": 0.2218,
+      "class 1": 0.3391,
+      "class 2": 0.1044,
+      "np proxy": 0.7429,
+      "top1": 0.1524,
+      "in_sample": NaN
+    },
+    "v2_gated_z": {
+      "objective": 0.3599,
+      "novel all": 0.3615,
+      "novel np": 0.3322,
+      "balanced": 0.3949,
+      "class 1": 0.3831,
+      "class 2": 0.4067,
+      "np proxy": 0.3448,
+      "top1": 0.2961,
+      "in_sample": 0.3627
+    },
+    "v2_global_rrf": {
+      "objective": 0.3563,
+      "novel all": 0.3571,
+      "novel np": 0.3294,
+      "balanced": 0.3877,
+      "class 1": 0.3718,
+      "class 2": 0.4036,
+      "np proxy": 0.3325,
+      "top1": 0.2881,
+      "in_sample": 0.3578
+    },
+    "fp_tani": {
+      "objective": 0.3562,
+      "novel all": 0.3595,
+      "novel np": 0.3244,
+      "balanced": 0.3826,
+      "class 1": 0.3586,
+      "class 2": 0.4066,
+      "np proxy": 0.3244,
+      "top1": 0.2843,
+      "in_sample": NaN
+    },
+    "v2_global_z": {
+      "objective": 0.354,
+      "novel all": 0.3554,
+      "novel np": 0.3249,
+      "balanced": 0.3945,
+      "class 1": 0.3851,
+      "class 2": 0.4039,
+      "np proxy": 0.3336,
+      "top1": 0.2966,
+      "in_sample": 0.3562
+    },
+    "fp_ll": {
+      "objective": 0.2891,
+      "novel all": 0.2821,
+      "novel np": 0.283,
+      "balanced": 0.3018,
+      "class 1": 0.2879,
+      "class 2": 0.3158,
+      "np proxy": 0.283,
+      "top1": 0.2216,
+      "in_sample": NaN
+    },
+    "np": {
+      "objective": 0.0994,
+      "novel all": 0.075,
+      "novel np": 0.1597,
+      "balanced": 0.082,
+      "class 1": 0.1204,
+      "class 2": 0.0436,
+      "np proxy": 0.1597,
+      "top1": 0.028,
+      "in_sample": NaN
+    },
+    "library": {
+      "objective": 0.0442,
+      "novel all": 0.0402,
+      "novel np": 0.059,
+      "balanced": 0.4426,
+      "class 1": 0.8589,
+      "class 2": 0.0262,
+      "np proxy": 0.4729,
+      "top1": 0.4029,
+      "in_sample": NaN
+    }
+  },
+  "b1": {
+    "class 1": 0.4435,
+    "class 2": 0.0869,
+    "np proxy": 0.3566,
+    "balanced": 0.2652
+  },
+  "fp_history": [
+    {
+      "epoch": 18,
+      "minutes": 5.66,
+      "train_bce": 0.05591,
+      "val_bce": 0.06079
+    },
+    {
+      "epoch": 19,
+      "minutes": 5.98,
+      "train_bce": 0.0558,
+      "val_bce": 0.06078
+    },
+    {
+      "epoch": 20,
+      "minutes": 6.3,
+      "train_bce": 0.05575,
+      "val_bce": 0.06079
+    }
+  ],
+  "config": {
+    "ppm": 10.0,
+    "n_val": 3000,
+    "tier_w_max": 20000,
+    "tier_k_fp": 60,
+    "tier_k_mix": 60,
+    "tier_pop_w": 0.25,
+    "ce_features": false,
+    "n_loss_bins": 0,
+    "fusion": {
+      "ppm": 10.0,
+      "n_bins": 1500,
+      "bin_width": 1.0,
+      "chunk_rows": 20000,
+      "max_candidates": 5000,
+      "n_random": 300,
+      "n_conf_bins": 3,
+      "min_bin": 40,
+      "rrf_k": 60.0,
+      "seed": 2026,
+      "n_loss_bins": 0
+    }
+  }
+}
