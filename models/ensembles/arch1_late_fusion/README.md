@@ -6,17 +6,7 @@
 Weighted combination of normalised scores from B2 and fingerprint models.
 
 ## Ways to run
-0. **v3, PubChem-scale recall + priors**: `notebooks/kaggle_v3_recall_priors.ipynb` (code:
-   `../ensemble_common/standalone/recall.py`). v2's pipeline plus a per-molecule PubChem channel (the 105.9M-structure
-   tier, scored with our own fingerprint MLP), a documentation prior `pop` and a natural-product flag `np` as fusion
-   sources, and validation copies that treat each structure as unknown (not a training structure, no library
-   spectra), which is the hidden test's situation. Fusion weights are tuned, cross-fitted, on
-   0.2 × class 2 + 0.8 × unknown-structure copies instead of balanced MRR. The ideas come from the public CASMI 2026
-   notebooks (documentation prior, PubChem channel, uniqueness rule); the code is ours and the datasets are credited
-   in the notebook. **v3.1** (`notebooks/kaggle_v3_1_ce_losses.ipynb`) is the same notebook with two richer MLP
-   inputs switched on: collision energy (mean, ramp width, present; `teamsplit.collision_energy`) and a
-   neutral-loss block (precursor − fragment, 500 bins; `FusionConfig.n_loss_bins`). Both are off by default, so
-   v2 and v3 are unchanged.
+0. **v3 (PubChem-scale recall + priors) is now architecture 2:** see `../arch2_recall_priors/` (LB 0.224).
 1. **Team split, standalone (v2)**: `notebooks/kaggle_fusion_team_split.ipynb`, on Kaggle with a GPU
    and internet off. It validates on **the same split as Member 3 and Member 7**: Member 3's
    `casmi_pipeline.make_split` (salt `casmi-split-v1`), `max_query_spectra=16`, `sample_molecules(..., 3000)`,
@@ -26,7 +16,8 @@ Weighted combination of normalised scores from B2 and fingerprint models.
    per-class MRR@25 next to B1 and writes `submission.csv`. Optional COCONUT + PubChemLite candidates
    come from the same Kaggle datasets as Member 7's v2. Code: `../ensemble_common/standalone/teamsplit.py`,
    `candidates.py`, `fpnet.PackedFingerprintMLP`. Member 3's module is passed in as `cp` and never imported
-   from their folder. The code dataset zip carries a copy of `baselines/b2_library_search/casmi_pipeline.py`.
+   from their folder. The code dataset zip carries a copy of `casmi_pipeline.py` (now in
+   `models/spectrum_encoders/common/`; the notebooks find it at either location).
 2. **Own split, first version**: `notebooks/kaggle_standalone_fusion.ipynb` (run output in
    `kaggle_standalone_fusion_run.ipynb`). It uses a crc32 split with *absent* / *covered* sets. Its numbers
    are not comparable with the team's; kept for the record.

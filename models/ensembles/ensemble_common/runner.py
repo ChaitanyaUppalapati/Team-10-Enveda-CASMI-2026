@@ -1,4 +1,4 @@
-"""Train / predict logic shared by arch1_late_fusion and arch2_stacked_meta.
+"""Train / predict logic shared by arch1_late_fusion and arch2_recall_priors (score-file mode).
 
 Config keys (see each config.yaml): ``model_id``, ``inputs`` (model_ids to combine),
 ``truth`` (path to a parquet/CSV with query_id, inchikey14 of the true structure for the
@@ -82,7 +82,7 @@ def predict_fusion(cfg: dict, split: str) -> pd.DataFrame:
     return _top_k(fuse(norm, report["weights"]))
 
 
-# ---- arch 2: stacked meta-learner ----------------------------------------------------
+# ---- arch 2 score-file mode: stacked meta-learner-------------------------------------------------
 def train_stack(cfg: dict) -> dict:
     ids, kind, seed = list(cfg["inputs"]), cfg.get("meta", "lgbm_rank"), cfg.get("seed", 2026)
     wide, truth = load_inputs(ids, "val"), load_truth(cfg)
