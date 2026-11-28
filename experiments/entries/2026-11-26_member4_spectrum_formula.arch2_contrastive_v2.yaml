@@ -1,0 +1,14 @@
+# Member 4: arch2 contrastive, wider network (not submitted).
+date: 2026-11-26
+member: 4
+model_id: spectrum_formula.arch2_contrastive
+version: v2
+change: "wider network: spec 2048 / hidden 4096 / mol_hidden 4096 (v1 was 1024/2048/2048); otherwise as v1"
+val_mrr: 0.8156
+lb_score: null
+submitted: false
+notes: >-
+  Team protocol, pool = training structures + COCONUT (721,630), 2,912 validation molecules. Model only 0.8126
+  (class 1 0.8533, class 2 0.7718, np proxy 0.6498, top25 0.979); gated 0.8156 (cross-fitted 0.8152; tau 0.990,
+  7% gated). 884,041 training spectra, 12 epochs, fp16 on 2x T4, 54.2 min. Versus v1: balanced +0.008, np proxy -0.009
+  (n=250, inside noise), 55% more run time, so width gives little here. Not submitted.

@@ -1,0 +1,15 @@
+# Member 4: arch2 contrastive, first full run (not submitted).
+date: 2026-11-26
+member: 4
+model_id: spectrum_formula.arch2_contrastive
+version: v1
+change: "contrastive spectrum-molecule model: InfoNCE with in-batch + 32 same-mass hard negatives, 0.5 Da bins + neutral loss, widths 1024/2048, d 512"
+val_mrr: 0.8086
+lb_score: null
+submitted: false
+notes: >-
+  Team protocol, pool = training structures + COCONUT (721,630), 2,912 validation molecules. Model only 0.8046
+  (class 1 0.8458, class 2 0.7633, np proxy 0.6586, top25 0.978); gated library search 0.8086 (cross-fitted 0.8084;
+  tau 0.990, only 7% of val molecules gated, np proxy unchanged). 884,041 training spectra, 12 epochs, fp16 on 2x T4,
+  34.7 min total. Best epoch 12 (val still rising slowly; train loss 0.21). Compare arch1 v5: model only 0.7355, np proxy 0.5898.
+  Not submitted: all 3 approved submissions were used; a 4th needs Arpana's approval.

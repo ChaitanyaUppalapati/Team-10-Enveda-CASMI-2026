@@ -1,0 +1,17 @@
+# Member 4: first full run. Provisional validation, not the frozen split.
+date: 2026-11-26
+member: 4
+model_id: spectrum_formula.arch1_dual_branch
+version: v1
+change: "first version: binned spectrum + precursor/adduct/CE branch -> Morgan fingerprint (+ aux element counts); COCONUT candidates"
+val_mrr: null
+lb_score: null
+submitted: false
+notes: >-
+  Provisional val MRR@25 = 0.2499 (5 ppm, Tanimoto), 3,801 queries, on a crc32 hash split of 10% of
+  structures (NOT Member 5's frozen split, so not comparable across members). 10 ppm gave 0.2396,
+  20 ppm 0.2250, cosine 0.2374, element-count penalty +0.001 (noise). Candidate pool: COCONUT
+  2026-11 lite (471,809 structures); the true structure is among the scored candidates for about
+  53% of val queries (MRR 0.472 on those). Training: 163,785 spectra (cap 20k per library,
+  10 test adducts, |precursor error| <= 20 ppm), 12 epochs, best epoch by val loss, 178 s on Apple MPS.
+  Seed 2026. No leaderboard submission yet.

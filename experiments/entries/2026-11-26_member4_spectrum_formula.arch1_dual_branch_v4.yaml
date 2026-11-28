@@ -1,0 +1,14 @@
+# Member 4: arch1 wide + neutral-loss + gate (submission 2).
+date: 2026-11-26
+member: 4
+model_id: spectrum_formula.arch1_dual_branch
+version: v4
+change: "wider network (spec 1024 / hidden 2048), neutral-loss channel, gated library search (B2), 0.5 Da bins, 12 epochs"
+val_mrr: 0.6868
+lb_score: 0.217
+submitted: true
+notes: >-
+  Team protocol, pool = training structures + COCONUT (721,630). Model only 0.6536; gated 0.6868 (cross-fitted 0.6846;
+  tau 0.765, 35% of val molecules gated). Gated class 1 0.779, class 2 0.594, np proxy 0.5585. 23.2 min on 2x T4.
+  Kaggle ref 58972327. Half-data local ablations on pool = training structures (baseline 0.5918): neutral loss +0.046,
+  wider network +0.081, 24 epochs +0.025, wide+loss 0.7091.

@@ -1,0 +1,13 @@
+# Member 4: arch1 first Kaggle submission (submission 1).
+date: 2026-11-26
+member: 4
+model_id: spectrum_formula.arch1_dual_branch
+version: v3
+change: "0.5 Da bins, 4 spectra/structure, 12 epochs, pool = training structures + COCONUT, no gate"
+val_mrr: 0.5292
+lb_score: 0.129
+submitted: true
+notes: >-
+  Team protocol (Member 3 split). Balanced 0.5292 (class 1 0.4795, class 2 0.5789, np proxy 0.3811, top25 0.876).
+  Pool 721,630 structures. 884,041 training spectra, 11.6 min on 2x T4. Kaggle ref 58969742.
+  The larger pool lowers validation MRR (more same-mass distractors) but raises coverage on the hidden set.
