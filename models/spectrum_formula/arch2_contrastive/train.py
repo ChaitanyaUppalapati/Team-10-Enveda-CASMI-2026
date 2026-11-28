@@ -19,6 +19,7 @@ sys.path.insert(0, str(HERE.parent))
 import torch  # noqa: E402
 from common import contrastive as C  # noqa: E402
 from common import features as F  # noqa: E402
+from common import network as N  # noqa: E402
 from common import retrieval as R  # noqa: E402
 from common import team  # noqa: E402
 from common.runtime import build_protocol, checkpoint_path, pick_device  # noqa: E402
@@ -27,8 +28,7 @@ from casmi.utils import load_config, set_seed  # noqa: E402
 
 
 def build_model(cfg: dict, n_bits: int) -> C.ContrastiveNet:
-    n_bins = F.input_dim(**F.spec_args(cfg["data"]))
-    return C.ContrastiveNet(n_bins=n_bins, n_bits=n_bits, **cfg["model"])
+    return C.build_model(cfg, n_bits)
 
 
 def val_arrays(proto: team.Protocol, data_cfg: dict) -> tuple[np.ndarray, np.ndarray]:
@@ -37,25 +37,34 @@ def val_arrays(proto: team.Protocol, data_cfg: dict) -> tuple[np.ndarray, np.nda
 
 def rank_split(
     model, proto: team.Protocol, queries, arrays, device, ppm: float, pool_bits=None, prior=None, prior_kwargs=None,
-    retrieval: dict | None = None, data_cfg: dict | None = None,
+    retrieval: dict | None = None, data_cfg: dict | None = None, network: dict | None = None,
 ) -> dict:  # fmt: skip
     """Embed spectra and the whole pool, then rank each molecule's mass-window candidates by cosine.
 
+    ``model`` may be a list: the models are then ensembled (average of ``scale * cosine`` over the models).
     ``prior``/``prior_kwargs`` (from ``priors.config_prior``) optionally add a documentation prior to the score;
-    ``retrieval`` (``weight``, ``k``, ``beta``) optionally blends in analog-spectrum retrieval (needs ``data_cfg``).
+    ``retrieval`` (``weight``, ``k``, ``beta``) optionally blends in analog-spectrum retrieval from the first model's
+    embeddings (needs ``data_cfg``); ``network`` (see ``common/network.py``) optionally re-sorts each top-25 using the
+    other query molecules' candidates.
     """
-    spec = C.embed_spectra(model, *arrays, device)
-    mol_ids, mol_emb = C.aggregate_embeddings(queries.molecule_id, spec)
+    ensemble = isinstance(model, list | tuple)
+    models = list(model) if ensemble else [model]
+    specs = [C.embed_spectra(m, *arrays, device) for m in models]
+    aggregated = [C.aggregate_embeddings(queries.molecule_id, spec) for spec in specs]
+    mol_ids, mol_embs = aggregated[0][0], [a[1] for a in aggregated]
+    pool_embs = [C.embed_pool(m, proto.pool_fp, device, pool_bits=pool_bits) for m in models]
+    scales = [float(m.scale.item()) for m in models]
+    masses = proto.cp.consensus_masses(queries)
     extra = dict(prior_kwargs or {})
     if retrieval and retrieval.get("weight"):
-        consensus = R.consensus_for(model, proto, spec, queries.molecule_id.to_numpy(), data_cfg, retrieval, device)
+        mols = queries.molecule_id.to_numpy()
+        consensus = R.consensus_for(models[0], proto, specs[0], mols, data_cfg, retrieval, device)
         extra.update(consensus=consensus, retrieval_weight=float(retrieval["weight"]), pool_fp_packed=proto.pool_fp)
-    pool_emb = C.embed_pool(model, proto.pool_fp, device, pool_bits=pool_bits)
-    masses = proto.cp.consensus_masses(queries)
-    return C.rank_contrastive(
-        proto.cp, proto.pool, pool_emb, mol_ids, mol_emb, masses, ppm,
-        prior=prior, scale=float(model.scale.item()), **extra,
+    rankings = C.rank_contrastive(
+        proto.cp, proto.pool, pool_embs if ensemble else pool_embs[0], mol_ids, mol_embs if ensemble else mol_embs[0],
+        masses, ppm, prior=prior, scale=scales if ensemble else scales[0], **extra,
     )  # fmt: skip
+    return N.apply_network(rankings, mol_ids, mol_embs[0], proto.pool_fp, network)
 
 
 def evaluate_mrr(model, proto: team.Protocol, arrays, device, ppm: float, pool_bits=None):

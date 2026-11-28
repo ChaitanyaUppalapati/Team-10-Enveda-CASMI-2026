@@ -14,6 +14,7 @@ import torch
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 
+from common import contrastive as C  # noqa: E402
 from common import features as F  # noqa: E402
 from common import priors, team  # noqa: E402
 from common.runtime import build_protocol, checkpoint_path, pick_device  # noqa: E402
@@ -34,7 +35,11 @@ def predict(cfg: dict, split: str, proto: team.Protocol | None = None):
     """Return ``(rankings, queries, truth_table_or_None, proto)`` for ``split`` (``val`` or ``test``)."""
     proto = proto or build_protocol(cfg)
     device = pick_device(cfg["train"].get("device", "auto"))
-    model = load_model(cfg, proto.cp.FP_BITS, device)
+    ensemble = cfg["predict"].get("ensemble")
+    if ensemble:  # several saved models, averaged; each keeps its own saved architecture
+        model = C.load_checkpoints(ensemble["checkpoints"], proto.cp.FP_BITS, device, cfg["data"])
+    else:
+        model = load_model(cfg, proto.cp.FP_BITS, device)
     if split == "val":
         queries, truth, arrays = proto.queries, proto.truth, val_arrays(proto, cfg["data"])
     elif split == "test":
@@ -47,7 +52,7 @@ def predict(cfg: dict, split: str, proto: team.Protocol | None = None):
     )
     rankings = rank_split(
         model, proto, queries, arrays, device, cfg["predict"]["ppm"], None, prior, prior_kwargs,
-        retrieval=cfg["predict"].get("retrieval"), data_cfg=cfg["data"],
+        retrieval=cfg["predict"].get("retrieval"), data_cfg=cfg["data"], network=cfg["predict"].get("network"),
     )  # fmt: skip
     return rankings, queries, truth, proto
 

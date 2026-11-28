@@ -42,3 +42,13 @@ predict:
     weight: 0.0                 # logit-space weight of the Tanimoto-to-consensus term; 20 looked best on validation
     k: 20                       # nearest library spectra per query spectrum
     beta: 30.0                  # softmax sharpness over neighbour similarities
+  network:                      # network between query molecules (off when weight is 0)
+    weight: 0.0                 # lambda in z(-log rank) + lambda * z(network score)
+    tau: 0.8                    # minimum cosine between two molecules' spectrum embeddings to link them
+    k: 5                        # neighbours per molecule
+    power: 4                    # edge weight = cosine ** power
+    top_k: 25                   # only the model's top-k candidates are re-sorted
+    neighbor_top: 5             # each neighbour lends its best candidates
+    lock_top: 0                 # keep the first N ranks fixed (1 = protect rank 1)
+  ensemble:                     # average several saved models (off when absent / null)
+    checkpoints: null           # list of model.pt paths; each is built from its own saved config

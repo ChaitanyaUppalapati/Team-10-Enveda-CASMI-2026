@@ -106,14 +106,14 @@ def rank_with_retrieval(
 def library_state(model, proto: team.Protocol, data_cfg: dict, device, log=print) -> tuple[np.ndarray, np.ndarray]:
     """Library embeddings and the pool index of each library spectrum, cached on the protocol object."""
     cached = getattr(proto, "_retrieval_library", None)
-    if cached is not None:
-        return cached
+    if cached is not None and cached[0] == id(model):
+        return cached[1], cached[2]
     rows = library_rows(proto, data_cfg)
     lib_emb = embed_library(model, proto, rows, F.spec_args(data_cfg), device)
     lib_struct = rows.inchikey14.astype(str).map(proto.key_index).to_numpy()
     log(f"retrieval library: {lib_emb.shape[0]:,} spectra embedded")
-    proto._retrieval_library = (lib_emb, lib_struct)
-    return proto._retrieval_library
+    proto._retrieval_library = (id(model), lib_emb, lib_struct)
+    return lib_emb, lib_struct
 
 
 def consensus_for(model, proto, spec_emb, spectrum_molecule, data_cfg: dict, retrieval_cfg: dict, device) -> dict:

@@ -157,14 +157,14 @@ def aggregate_embeddings(molecule_ids, emb: np.ndarray) -> tuple[list, np.ndarra
 def rank_contrastive(
     cp,
     pool: pd.DataFrame,
-    pool_emb: np.ndarray,
+    pool_emb,
     mol_ids,
     mol_emb,
     masses,
     ppm: float,
     prior: np.ndarray | None = None,
     prior_weight: float = 0.0,
-    scale: float = 1.0,
+    scale=1.0,
     prior_topk: int | None = None,
     consensus: dict | None = None,
     retrieval_weight: float = 0.0,
@@ -172,28 +172,33 @@ def rank_contrastive(
 ) -> dict:
     """``{molecule_id: [pool index, ...]}`` best first; lists are padded to 25 like the team's ranking.
 
-    With ``prior`` (one value per pool structure) the score is ``scale * cosine + prior_weight * prior``, i.e. the
-    prior is added in logit space (``scale`` is the model's learned inverse temperature). With ``prior_topk`` the
-    prior only reorders the ``prior_topk`` best candidates by cosine (so it cannot change which candidates are kept).
+    **Ensemble:** pass lists for ``pool_emb``, ``mol_emb`` and ``scale`` (one entry per model, same molecule order) and
+    each candidate's logit is the average of ``scale_i * cosine_i`` over the models. With a single model the logit is
+    ``scale * cosine``; ordering by it equals ordering by cosine.
+
+    With ``prior`` (one value per pool structure) ``prior_weight * prior`` is added to the logit. With ``prior_topk``
+    the prior only reorders the ``prior_topk`` best candidates (so it cannot change which candidates are kept).
 
     With ``consensus`` (``{molecule: fingerprint}`` from analog-spectrum retrieval), ``retrieval_weight`` times the
     Tanimoto similarity between each candidate and the molecule's consensus fingerprint is added to the logit first;
     ``pool_fp_packed`` supplies the candidates' bits. The prior, if any, is applied on top of that blended score.
     """
+    ensemble = isinstance(pool_emb, list | tuple)
+    pool_embs = list(pool_emb) if ensemble else [pool_emb]
+    mol_embs = list(mol_emb) if ensemble else [mol_emb]
+    scales = list(scale) if ensemble else [scale]
     pool_mass = pool.mass.to_numpy()
     rankings = {}
-    for mol, q in zip(mol_ids, mol_emb, strict=True):
+    for m, mol in enumerate(mol_ids):
         mass = float(masses[mol])
         idx = cp.window_indices(pool_mass, mass, ppm)
         if len(idx):
-            cos = pool_emb[idx].astype(np.float32) @ q
-            use_retrieval = consensus is not None and retrieval_weight and mol in consensus
-            if use_retrieval:
-                logit = scale * cos + retrieval_weight * F.soft_tanimoto(
+            parts = zip(pool_embs, mol_embs, scales, strict=True)
+            logit = sum(s * (pe[idx].astype(np.float32) @ me[m]) for pe, me, s in parts) / len(pool_embs)
+            if consensus is not None and retrieval_weight and mol in consensus:
+                logit = logit + retrieval_weight * F.soft_tanimoto(
                     consensus[mol], np.unpackbits(pool_fp_packed[idx], axis=1)
                 )
-            else:
-                logit = cos if not (prior is not None and prior_weight) else scale * cos
             order = np.argsort(-logit, kind="stable")
             if prior is not None and prior_weight:
                 head = order if prior_topk is None else order[:prior_topk]
@@ -202,3 +207,26 @@ def rank_contrastive(
             idx = idx[order]
         rankings[mol] = cp.fill_to_k(idx, pool_mass, mass)
     return rankings
+
+
+def build_model(cfg: dict, n_bits: int) -> ContrastiveNet:
+    """Network described by a run config (``data`` spectrum settings + ``model`` sizes)."""
+    return ContrastiveNet(n_bins=F.input_dim(**F.spec_args(cfg["data"])), n_bits=n_bits, **cfg["model"])
+
+
+def load_checkpoints(paths, n_bits: int, device, data_cfg: dict | None = None) -> list[ContrastiveNet]:
+    """Load saved models (``{"state", "cfg"}`` checkpoints) in eval mode, each built from its own saved config.
+
+    With ``data_cfg`` every checkpoint must use the same spectrum representation (bin width, neutral-loss block),
+    because an ensemble embeds the same spectrum arrays with all models.
+    """
+    models = []
+    for path in paths:
+        ckpt = torch.load(path, map_location=device, weights_only=False)
+        if data_cfg is not None and F.spec_args(ckpt["cfg"]["data"]) != F.spec_args(data_cfg):
+            got, want = F.spec_args(ckpt["cfg"]["data"]), F.spec_args(data_cfg)
+            raise ValueError(f"{path}: spectrum settings {got} differ from {want}")
+        model = build_model(ckpt["cfg"], n_bits).to(device)
+        model.load_state_dict(ckpt["state"])
+        models.append(model.eval())
+    return models
